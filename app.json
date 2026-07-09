@@ -25,7 +25,7 @@
       "package": "com.doselyai.app"
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -42,7 +42,13 @@
       ],
       "expo-secure-store",
       "@react-native-community/datetimepicker",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow DoselyAI to use Face ID to unlock the app."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false,

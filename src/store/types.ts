@@ -1,5 +1,16 @@
 /** Local data model. Everything lives on the device — no accounts, no cloud. */
 
+/**
+ * A local profile — not a server account. It personalizes the app and, when
+ * `biometricLock` is on, gates access behind the device's Face ID / Touch ID.
+ */
+export type Profile = {
+  name: string;
+  /** Require Face ID / Touch ID (or device passcode) to open the app. */
+  biometricLock: boolean;
+  createdAt: string; // ISO
+};
+
 export type Medication = {
   id: string;
   name: string;
