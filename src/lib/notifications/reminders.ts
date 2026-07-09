@@ -17,9 +17,16 @@ export const TAKEN_ACTION = 'TAKEN';
 
 let configured = false;
 
+/**
+ * Scheduled local notifications are a native capability. On web the
+ * expo-notifications scheduling/category APIs don't exist and throw, so every
+ * entry point here no-ops on web (the app still runs, just without reminders).
+ */
+const SUPPORTS_NOTIFICATIONS = Platform.OS !== 'web';
+
 /** Set the foreground behavior, Android channel, and the "Mark as taken" action. */
 export async function configureNotifications(): Promise<void> {
-  if (configured) return;
+  if (configured || !SUPPORTS_NOTIFICATIONS) return;
   configured = true;
 
   Notifications.setNotificationHandler({
@@ -49,11 +56,13 @@ export async function configureNotifications(): Promise<void> {
 }
 
 export async function getReminderPermission(): Promise<boolean> {
+  if (!SUPPORTS_NOTIFICATIONS) return false;
   const { granted } = await Notifications.getPermissionsAsync();
   return granted;
 }
 
 export async function requestReminderPermission(): Promise<boolean> {
+  if (!SUPPORTS_NOTIFICATIONS) return false;
   const { granted } = await Notifications.requestPermissionsAsync();
   return granted;
 }
@@ -68,6 +77,7 @@ function toExpoWeekday(day: number): number {
  * Does nothing (beyond cancelling) if notification permission isn't granted.
  */
 export async function syncReminders(medications: Medication[]): Promise<void> {
+  if (!SUPPORTS_NOTIFICATIONS) return;
   await Notifications.cancelAllScheduledNotificationsAsync();
   if (!(await getReminderPermission())) return;
 
@@ -152,5 +162,6 @@ async function scheduleRefillReminder(med: Medication): Promise<void> {
 
 /** Cancel every scheduled reminder. */
 export async function disableReminders(): Promise<void> {
+  if (!SUPPORTS_NOTIFICATIONS) return;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }

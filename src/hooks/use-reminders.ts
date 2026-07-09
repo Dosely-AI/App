@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 
 import { dateKey } from '@/features/adherence/dates';
 import { TAKEN_ACTION, configureNotifications, syncReminders } from '@/lib/notifications/reminders';
@@ -13,6 +14,9 @@ export function useReminders(): void {
   const medications = useAppStore((s) => s.medications);
 
   useEffect(() => {
+    // Scheduled local notifications are native-only; skip the wiring on web.
+    if (Platform.OS === 'web') return;
+
     configureNotifications();
 
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
