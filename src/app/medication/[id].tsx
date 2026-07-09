@@ -5,6 +5,7 @@ import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { MedicationForm } from '@/features/medications/components/medication-form';
 import { MedicationOverview } from '@/features/medications/components/medication-overview';
+import { RefillCard } from '@/features/refill/components/refill-card';
 import { formToInput } from '@/features/medications/to-input';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -51,6 +52,8 @@ export default function MedicationDetailScreen() {
         showsVerticalScrollIndicator={false}>
         <MedicationOverview name={med.name} rxcui={med.rxcui} />
 
+        <RefillCard med={med} />
+
         <MedicationForm
           initial={{
             name: med.name,
@@ -59,10 +62,19 @@ export default function MedicationDetailScreen() {
             form: med.form ?? '',
             times: med.times,
             daysOfWeek: med.daysOfWeek,
+            pillsPerDose: med.pillsPerDose?.toString() ?? '',
+            quantityOnHand: med.quantityOnHand?.toString() ?? '',
+            refillLeadDays: med.refillLeadDays?.toString() ?? '',
           }}
           submitLabel="Save changes"
           onSubmit={(values) => {
-            updateMedication(med.id, formToInput(values));
+            updateMedication(
+              med.id,
+              formToInput(values, {
+                quantityOnHand: med.quantityOnHand ?? null,
+                quantityAsOf: med.quantityAsOf ?? null,
+              }),
+            );
             router.back();
           }}
         />

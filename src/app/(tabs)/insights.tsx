@@ -15,6 +15,7 @@ import {
   ratingFor,
 } from '@/features/adherence/adherence';
 import { lastNDays, parseDateKey } from '@/features/adherence/dates';
+import { upcomingRefills, type MedRefill } from '@/features/refill/refill';
 import { type ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAppStore } from '@/store/app-store';
@@ -36,6 +37,27 @@ function shortDay(key: string): string {
   return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
 }
 
+/** One medication's refill status: name on the left, days-left badge on the right. */
+function RefillRow({ refill, theme }: { refill: MedRefill; theme: Theme }) {
+  const { med, status } = refill;
+  const color =
+    status.level === 'out' ? theme.danger : status.level === 'soon' ? theme.warning : status.level === 'ok' ? theme.success : theme.textSecondary;
+  const right =
+    status.level === 'out'
+      ? 'Refill now'
+      : status.level === 'unknown'
+        ? 'As needed'
+        : `${status.daysLeft}d · ≈${status.remaining} left`;
+  return (
+    <View style={styles.medHeader}>
+      <Text style={[styles.medName, { color: theme.text }]} numberOfLines={1}>
+        {med.name}
+      </Text>
+      <Text style={{ color, fontWeight: '600' }}>{right}</Text>
+    </View>
+  );
+}
+
 export default function InsightsScreen() {
   const theme = useTheme();
   const medications = useAppStore((s) => s.medications);
@@ -50,6 +72,7 @@ export default function InsightsScreen() {
       byMed: perMed(medications, logs, days),
       streak: currentStreak(medications, logs, days),
       tips: generateTips(medications, logs, days),
+      refills: upcomingRefills(medications),
     };
   }, [medications, logs]);
 
@@ -90,6 +113,18 @@ export default function InsightsScreen() {
             </Text>
           ) : null}
         </Card>
+
+        {/* Refills */}
+        {data.refills.length > 0 ? (
+          <Card>
+            <Text style={[styles.cardLabel, { color: theme.textSecondary }]}>Refills</Text>
+            <View style={{ gap: Spacing.three, marginTop: Spacing.two }}>
+              {data.refills.map((r) => (
+                <RefillRow key={r.med.id} refill={r} theme={theme} />
+              ))}
+            </View>
+          </Card>
+        ) : null}
 
         {/* Daily trend */}
         <Card>

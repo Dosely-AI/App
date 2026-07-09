@@ -1,10 +1,11 @@
 # DoselyAI
 
-A simple, **local-only** medication companion. DoselyAI does three things:
+A simple, **local-only** medication companion. DoselyAI does four things:
 
 1. **Explains your medications** — a plain-language overview of what each one is for, grounded in official FDA labeling (optionally rewritten by AI if you add your own key).
-2. **Tracks doses** — add your medications and how often you take them, tap "I took it," and see your history visualized.
+2. **Reminds & tracks doses** — add your medications and how often you take them, get an on-device reminder at each dose time, tap "I took it," and see your history visualized.
 3. **Rates your adherence** — an adherence score, trends, and personalized, rule-based tips to help you stay on track.
+4. **Predicts refills** — enter how many pills you have and DoselyAI projects your days of supply, shows when each medication runs out, and reminds you before it does.
 
 Everything stays **on your device**. There is no account and nothing is uploaded to any server.
 
@@ -56,13 +57,14 @@ src/
 
 - `npm start` / `npx expo start` — dev server
 - `npm run android` / `ios` / `web` — open a platform
-- `npm test` — run the Jest suite (adherence math, schedule, schema, drug clients)
+- `npm test` — run the Jest suite (adherence math, schedule, schema, refill prediction, drug clients)
 - `npx tsc --noEmit` — type-check
 
 ## What's next (not yet built)
 
-- **Local reminder notifications** at each dose time (expo-notifications).
 - Optional cloud sync / caregiver sharing (the app was designed so this can be added later).
+- Barcode / pill scanning to add a medication without typing.
+- Drug-interaction checks across your medication list.
 
 ## Privacy
 

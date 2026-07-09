@@ -12,6 +12,17 @@ export type Medication = {
   /** 0=Sun..6=Sat. Empty = every day. */
   daysOfWeek: number[];
   createdAt: string; // ISO
+
+  // --- Refill tracking (all optional so medications saved before this feature
+  // still load cleanly; null/undefined = refill prediction is off). ---
+  /** Units taken per scheduled dose slot (e.g. 2 tablets at a time). Null = 1. */
+  pillsPerDose?: number | null;
+  /** Units on hand as counted on `quantityAsOf`. Null = not tracking refills. */
+  quantityOnHand?: number | null;
+  /** Local 'YYYY-MM-DD' the `quantityOnHand` count was taken. */
+  quantityAsOf?: string | null;
+  /** Warn this many days before the projected run-out date. Null = 7. */
+  refillLeadDays?: number | null;
 };
 
 /** A single dose the user marked as taken, tied to a scheduled slot. */

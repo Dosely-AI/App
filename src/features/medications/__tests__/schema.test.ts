@@ -7,6 +7,9 @@ const base = {
   form: '',
   times: ['08:00'],
   daysOfWeek: [] as number[],
+  pillsPerDose: '',
+  quantityOnHand: '',
+  refillLeadDays: '',
 };
 
 describe('medicationFormSchema', () => {

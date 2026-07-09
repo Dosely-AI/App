@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { formatTime12 } from '@/features/medications/schedule';
+import { refillStatus } from '@/features/refill/refill';
 import type { Medication } from '@/store/types';
 
 /**
@@ -113,6 +114,39 @@ export async function syncReminders(medications: Medication[]): Promise<void> {
         // Ignore individual scheduling failures so one bad entry can't block the rest.
       }
     }
+
+    await scheduleRefillReminder(med);
+  }
+}
+
+/** Notify once, `leadDays` before a tracked medication is projected to run out. */
+async function scheduleRefillReminder(med: Medication): Promise<void> {
+  const status = refillStatus(med);
+  if (status.level !== 'ok' && status.level !== 'soon') return;
+  if (status.daysLeft == null) return;
+
+  // Fire at 9am, leadDays before the run-out date. If that moment is already
+  // past (supply is low now), the in-app Refills view surfaces it instead.
+  const leadOffset = status.daysLeft - status.leadDays;
+  if (leadOffset <= 0) return;
+
+  const when = new Date();
+  when.setHours(9, 0, 0, 0);
+  when.setDate(when.getDate() + leadOffset);
+  if (when.getTime() <= Date.now()) return;
+
+  try {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Refill reminder',
+        body: `${med.name} runs low in about ${status.leadDays} day${status.leadDays === 1 ? '' : 's'}. Time to arrange a refill.`,
+        data: { medId: med.id, kind: 'refill' },
+        sound: 'default',
+      },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: when, channelId: CHANNEL_ID },
+    });
+  } catch {
+    // Non-fatal: a failed refill reminder must not block dose reminders.
   }
 }
 
