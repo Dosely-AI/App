@@ -1,56 +1,71 @@
-# Welcome to your Expo app 👋
+# DoselyAI
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A simple, **local-only** medication companion. DoselyAI does three things:
 
-## Get started
+1. **Explains your medications** — a plain-language overview of what each one is for, grounded in official FDA labeling (optionally rewritten by AI if you add your own key).
+2. **Tracks doses** — add your medications and how often you take them, tap "I took it," and see your history visualized.
+3. **Rates your adherence** — an adherence score, trends, and personalized, rule-based tips to help you stay on track.
 
-1. Install dependencies
+Everything stays **on your device**. There is no account and nothing is uploaded to any server.
 
-   ```bash
-   npm install
-   ```
+> ⚕️ **Not medical advice.** DoselyAI is an informational adherence tracker, not a medical
+> device. It never tells you to start, stop, or change a medication. Always consult your
+> doctor or pharmacist. Drug information comes from public FDA/RxNorm data, not invented by AI.
 
-2. Start the app
+## Tech stack
 
-   ```bash
-   npx expo start
-   ```
+- **App:** Expo (React Native) + Expo Router + TypeScript.
+- **Local data:** Zustand + AsyncStorage (on-device only).
+- **Drug info:** RxNorm (name matching) + openFDA drug labels (grounded facts).
+- **Optional AI:** Anthropic Claude, called with *your own* API key, stored only in the device secure store.
+- **Forms/validation:** React Hook Form + Zod. **Tests:** Jest.
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run it
 
 ```bash
-npm run reset-project
+npm install
+npx expo start        # then scan the QR code with the Expo Go app on your phone
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+That's it — no configuration needed. Add medications in the **Meds** tab, check off doses on
+**Today**, and see your rating on **Insights**.
 
-### Other setup steps
+**Optional — AI summaries:** in **Settings**, paste an Anthropic API key to have Claude rewrite
+the FDA information into a short, plain-language summary. The key is stored only on your device
+(Keychain/Keystore) and sent only to Anthropic. Without a key, DoselyAI shows the FDA text directly.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Project structure
 
-## Learn more
+```
+src/
+  app/                        # Expo Router screens
+    (tabs)/                   # Today, Meds, Insights, Settings
+    medication/new.tsx        # add a medication
+    medication/[id].tsx       # medication overview + edit + delete
+  components/                 # Screen, Card, Disclaimer, ui/{button,text-field}
+  features/
+    adherence/                # dates + adherence engine (pure, tested)
+    medications/              # schema, schedule helpers, RxNorm, form components
+  lib/
+    drug/                     # rxnorm.ts, openfda.ts (grounded drug info)
+    ai/                       # optional Claude summary + secure key storage
+  store/                      # Zustand store (medications + dose logs)
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Scripts
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- `npm start` / `npx expo start` — dev server
+- `npm run android` / `ios` / `web` — open a platform
+- `npm test` — run the Jest suite (adherence math, schedule, schema, drug clients)
+- `npx tsc --noEmit` — type-check
 
-## Join the community
+## What's next (not yet built)
 
-Join our community of developers creating universal apps.
+- **Local reminder notifications** at each dose time (expo-notifications).
+- Optional cloud sync / caregiver sharing (the app was designed so this can be added later).
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Privacy
+
+All medication and dose data lives in on-device storage. Reset it anytime in **Settings → Reset
+all data**. The only network calls are anonymous drug-info lookups (RxNorm/openFDA, drug name only)
+and — if you opt in — Claude requests with your own key.

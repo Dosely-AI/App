@@ -1,14 +1,18 @@
 {
   "expo": {
-    "name": "Dosely",
-    "slug": "Dosely",
+    "name": "DoselyAI",
+    "slug": "doselyai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "dosely",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.pranavdharanipathysteam.doselyai",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +21,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.doselyai.app"
     },
     "web": {
       "output": "static",
@@ -34,11 +39,21 @@
             "imageWidth": 76
           }
         }
-      ]
+      ],
+      "expo-secure-store",
+      "@react-native-community/datetimepicker",
+      "expo-notifications"
     ],
     "experiments": {
-      "typedRoutes": true,
+      "typedRoutes": false,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "48ed467e-c76f-464d-88c5-7bfa5267d878"
+      }
+    },
+    "owner": "pranavdharanipathys-team"
   }
 }
