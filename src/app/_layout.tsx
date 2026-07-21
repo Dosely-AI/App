@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { AuthGate } from '@/features/auth/auth-gate';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReminders } from '@/hooks/use-reminders';
 import { useTheme } from '@/hooks/use-theme';
@@ -20,18 +21,21 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack
-            screenOptions={{
-              headerStyle: { backgroundColor: theme.background },
-              headerTitleStyle: { color: theme.text },
-              headerTintColor: theme.tint,
-              headerShadowVisible: false,
-              contentStyle: { backgroundColor: theme.background },
-            }}>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="medication/new" options={{ title: 'Add medication' }} />
-            <Stack.Screen name="medication/[id]" options={{ title: 'Medication' }} />
-          </Stack>
+          <AuthGate>
+            <Stack
+              screenOptions={{
+                headerStyle: { backgroundColor: theme.background },
+                headerTitleStyle: { color: theme.text },
+                headerTintColor: theme.tint,
+                headerShadowVisible: false,
+                contentStyle: { backgroundColor: theme.background },
+              }}>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="medication/new" options={{ title: 'Add medication' }} />
+              <Stack.Screen name="medication/scan" options={{ title: 'Scan medication' }} />
+              <Stack.Screen name="medication/[id]" options={{ title: 'Medication' }} />
+            </Stack>
+          </AuthGate>
           <StatusBar style="auto" />
         </ThemeProvider>
       </SafeAreaProvider>

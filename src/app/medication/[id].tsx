@@ -2,9 +2,11 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { AuroraBackground } from '@/components/ui/aurora-background';
 import { Button } from '@/components/ui/button';
 import { MedicationForm } from '@/features/medications/components/medication-form';
 import { MedicationOverview } from '@/features/medications/components/medication-overview';
+import { RefillCard } from '@/features/refill/components/refill-card';
 import { formToInput } from '@/features/medications/to-input';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -44,12 +46,15 @@ export default function MedicationDetailScreen() {
 
   return (
     <Screen edges={['bottom']}>
+      <AuroraBackground />
       <Stack.Screen options={{ title: med.name }} />
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
         <MedicationOverview name={med.name} rxcui={med.rxcui} />
+
+        <RefillCard med={med} />
 
         <MedicationForm
           initial={{
@@ -59,10 +64,19 @@ export default function MedicationDetailScreen() {
             form: med.form ?? '',
             times: med.times,
             daysOfWeek: med.daysOfWeek,
+            pillsPerDose: med.pillsPerDose?.toString() ?? '',
+            quantityOnHand: med.quantityOnHand?.toString() ?? '',
+            refillLeadDays: med.refillLeadDays?.toString() ?? '',
           }}
           submitLabel="Save changes"
           onSubmit={(values) => {
-            updateMedication(med.id, formToInput(values));
+            updateMedication(
+              med.id,
+              formToInput(values, {
+                quantityOnHand: med.quantityOnHand ?? null,
+                quantityAsOf: med.quantityAsOf ?? null,
+              }),
+            );
             router.back();
           }}
         />

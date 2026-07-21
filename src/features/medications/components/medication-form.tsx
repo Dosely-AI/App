@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { medicationFormSchema, type MedicationFormValues } from '@/features/medications/schema';
+import { useTheme } from '@/hooks/use-theme';
+import { Text } from 'react-native';
 
 import { DaysSelector } from './days-selector';
 import { DrugNameField } from './drug-name-field';
@@ -18,6 +20,9 @@ const DEFAULTS: MedicationFormValues = {
   form: '',
   times: [],
   daysOfWeek: [],
+  pillsPerDose: '',
+  quantityOnHand: '',
+  refillLeadDays: '',
 };
 
 type Props = {
@@ -28,6 +33,7 @@ type Props = {
 };
 
 export function MedicationForm({ initial, submitLabel, submitting, onSubmit }: Props) {
+  const theme = useTheme();
   const {
     control,
     handleSubmit,
@@ -100,6 +106,63 @@ export function MedicationForm({ initial, submitLabel, submitting, onSubmit }: P
         render={({ field }) => <DaysSelector value={field.value} onChange={field.onChange} />}
       />
 
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Refill tracking</Text>
+        <Text style={[styles.sectionHint, { color: theme.textSecondary }]}>
+          Optional. Enter how many you have and Dosely predicts when you&apos;ll run out.
+        </Text>
+
+        <View style={styles.row}>
+          <View style={styles.flex}>
+            <Controller
+              control={control}
+              name="quantityOnHand"
+              render={({ field }) => (
+                <TextField
+                  label="Pills on hand"
+                  placeholder="e.g. 30"
+                  keyboardType="numeric"
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  error={errors.quantityOnHand?.message}
+                />
+              )}
+            />
+          </View>
+          <View style={styles.flex}>
+            <Controller
+              control={control}
+              name="pillsPerDose"
+              render={({ field }) => (
+                <TextField
+                  label="Per dose"
+                  placeholder="1"
+                  keyboardType="numeric"
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  error={errors.pillsPerDose?.message}
+                />
+              )}
+            />
+          </View>
+        </View>
+
+        <Controller
+          control={control}
+          name="refillLeadDays"
+          render={({ field }) => (
+            <TextField
+              label="Remind me this many days before running out"
+              placeholder="7"
+              keyboardType="numeric"
+              value={field.value}
+              onChangeText={field.onChange}
+              error={errors.refillLeadDays?.message}
+            />
+          )}
+        />
+      </View>
+
       <Button title={submitLabel} loading={submitting} onPress={handleSubmit(onSubmit)} />
     </View>
   );
@@ -109,4 +172,7 @@ const styles = StyleSheet.create({
   form: { gap: Spacing.four },
   row: { flexDirection: 'row', gap: Spacing.three },
   flex: { flex: 1 },
+  section: { gap: Spacing.three },
+  sectionTitle: { fontSize: 16, fontWeight: '700' },
+  sectionHint: { fontSize: 13, lineHeight: 18, marginTop: -Spacing.two },
 });
