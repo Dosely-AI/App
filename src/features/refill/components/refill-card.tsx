@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Card } from '@/components/ui/card';
+import { ProgressBar } from '@/components/ui/progress-bar';
 import { Spacing, type ThemeColor } from '@/constants/theme';
 import { parseDateKey } from '@/features/adherence/dates';
 import { useTheme } from '@/hooks/use-theme';
@@ -27,17 +29,30 @@ export function RefillCard({ med }: { med: Medication }) {
 
   const { color, icon, headline, detail } = describe(status, theme);
 
+  // Share of the counted supply still on hand, for the bar.
+  const counted = med.quantityOnHand ?? 0;
+  const supplyPct = counted > 0 ? (status.remaining / counted) * 100 : null;
+
   return (
-    <Card>
-      <Text style={[styles.label, { color: theme.textSecondary }]}>Refill</Text>
-      <View style={styles.row}>
-        <Ionicons name={icon} size={22} color={color} />
-        <View style={styles.flex}>
-          <Text style={[styles.headline, { color }]}>{headline}</Text>
-          {detail ? <Text style={[styles.detail, { color: theme.textSecondary }]}>{detail}</Text> : null}
+    <Animated.View entering={FadeInDown.duration(420)}>
+      <Card>
+        <Text style={[styles.label, { color: theme.textSecondary }]}>Refill</Text>
+        <View style={styles.row}>
+          <Ionicons name={icon} size={22} color={color} />
+          <View style={styles.flex}>
+            <Text style={[styles.headline, { color }]}>{headline}</Text>
+            {detail ? (
+              <Text style={[styles.detail, { color: theme.textSecondary }]}>{detail}</Text>
+            ) : null}
+          </View>
         </View>
-      </View>
-    </Card>
+        {supplyPct !== null ? (
+          <View style={styles.bar}>
+            <ProgressBar pct={supplyPct} color={color} height={10} delay={250} />
+          </View>
+        ) : null}
+      </Card>
+    </Animated.View>
   );
 }
 
@@ -81,6 +96,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: Spacing.two },
   row: { flexDirection: 'row', gap: Spacing.three, alignItems: 'center' },
   flex: { flex: 1 },
+  bar: { marginTop: Spacing.three },
   headline: { fontSize: 17, fontWeight: '700' },
   detail: { fontSize: 14, lineHeight: 20, marginTop: 2 },
 });

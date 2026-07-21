@@ -2,6 +2,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { AuroraBackground } from '@/components/ui/aurora-background';
 import { Button } from '@/components/ui/button';
 import { MedicationForm } from '@/features/medications/components/medication-form';
 import { MedicationOverview } from '@/features/medications/components/medication-overview';
@@ -45,6 +46,7 @@ export default function MedicationDetailScreen() {
 
   return (
     <Screen edges={['bottom']}>
+      <AuroraBackground />
       <Stack.Screen options={{ title: med.name }} />
       <ScrollView
         contentContainerStyle={styles.content}

@@ -11,6 +11,17 @@ export type Profile = {
   createdAt: string; // ISO
 };
 
+/**
+ * A real, server-backed account established with a passkey (web path). Unlike
+ * `Profile`, this identity is verified by the backend and can span devices.
+ */
+export type AuthSession = {
+  /** Bearer token from the auth server. */
+  token: string;
+  userId: string;
+  name: string;
+};
+
 export type Medication = {
   id: string;
   name: string;

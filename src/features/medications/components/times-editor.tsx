@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Spacing } from '@/constants/theme';
 import { formatTime12, sortTimes } from '@/features/medications/schedule';
 import { useTheme } from '@/hooks/use-theme';
+
+import { TimePickerModal } from './time-picker-modal';
 
 type Props = {
   value: string[];
@@ -45,21 +46,14 @@ export function TimesEditor({ value, onChange, error }: Props) {
 
       {error ? <Text style={{ color: theme.danger, fontSize: 13 }}>{error}</Text> : null}
 
-      {showPicker ? (
-        <DateTimePicker
-          value={new Date()}
-          mode="time"
-          onChange={(event, date) => {
-            setShowPicker(false);
-            if (event.type === 'set' && date) {
-              const hh = String(date.getHours()).padStart(2, '0');
-              const mm = String(date.getMinutes()).padStart(2, '0');
-              const next = `${hh}:${mm}`;
-              if (!times.includes(next)) onChange(sortTimes([...times, next]));
-            }
-          }}
-        />
-      ) : null}
+      <TimePickerModal
+        visible={showPicker}
+        onCancel={() => setShowPicker(false)}
+        onConfirm={(next) => {
+          setShowPicker(false);
+          if (!times.includes(next)) onChange(sortTimes([...times, next]));
+        }}
+      />
     </View>
   );
 }

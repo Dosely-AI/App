@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,7 @@ export function Onboarding() {
   return (
     <Screen>
       <View style={styles.content}>
-        <View style={styles.hero}>
+        <Animated.View entering={FadeInDown.duration(550)} style={styles.hero}>
           <View style={[styles.logo, { backgroundColor: theme.tint }]}>
             <Ionicons name="medkit" size={34} color={theme.onTint} />
           </View>
@@ -65,8 +66,9 @@ export function Onboarding() {
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             Let&apos;s set up your profile. Everything stays on this device — no account, no password.
           </Text>
-        </View>
+        </Animated.View>
 
+        <Animated.View entering={FadeInDown.duration(500).delay(160)}>
         <Card>
           <TextField
             label="Your name"
@@ -99,8 +101,11 @@ export function Onboarding() {
             </Text>
           )}
         </Card>
+        </Animated.View>
 
-        <Button title="Get started" onPress={submit} />
+        <Animated.View entering={FadeIn.duration(500).delay(320)}>
+          <Button title="Get started" onPress={submit} />
+        </Animated.View>
       </View>
     </Screen>
   );

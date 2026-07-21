@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { DoseLog, Medication, Profile } from './types';
+import type { AuthSession, DoseLog, Medication, Profile } from './types';
 
 /** Fields a caller provides; id and createdAt are assigned by the store. */
 export type MedicationInput = Omit<Medication, 'id' | 'createdAt'>;
@@ -12,6 +12,8 @@ type AppState = {
   logs: DoseLog[];
   /** The local profile, or null before the user has set one up. */
   profile: Profile | null;
+  /** A server-backed passkey account (web path), or null when not signed in. */
+  session: AuthSession | null;
   /**
    * Whether the app is unlocked for this session. In-memory only (never
    * persisted) so a biometric-locked profile must re-authenticate each launch.
@@ -27,6 +29,8 @@ type AppState = {
   logDose: (medId: string, date: string, time: string) => void;
   unlogDose: (medId: string, date: string, time: string) => void;
 
+  /** Store a passkey session after a successful sign up / sign in. */
+  setSession: (session: AuthSession) => void;
   /** Create or replace the local profile (used by sign up and profile edit). */
   setProfile: (name: string, biometricLock: boolean) => void;
   /** Mark the app unlocked for this session (after a successful auth). */
@@ -52,6 +56,7 @@ export const useAppStore = create<AppState>()(
       medications: [],
       logs: [],
       profile: null,
+      session: null,
       unlocked: false,
       hydrated: false,
 
@@ -81,6 +86,8 @@ export const useAppStore = create<AppState>()(
       unlogDose: (medId, date, time) =>
         set((s) => ({ logs: s.logs.filter((l) => !sameSlot(l, medId, date, time)) })),
 
+      setSession: (session) => set({ session }),
+
       setProfile: (name, biometricLock) =>
         set((s) => ({
           profile: {
@@ -93,16 +100,22 @@ export const useAppStore = create<AppState>()(
 
       unlock: () => set({ unlocked: true }),
       lock: () => set({ unlocked: false }),
-      signOut: () => set({ profile: null, unlocked: false }),
+      signOut: () => set({ profile: null, session: null, unlocked: false }),
 
-      resetAll: () => set({ medications: [], logs: [], profile: null, unlocked: false }),
+      resetAll: () =>
+        set({ medications: [], logs: [], profile: null, session: null, unlocked: false }),
     }),
     {
       name: 'dosely-store-v1',
       storage: createJSONStorage(() => AsyncStorage),
       // Persist data + profile, but never the in-memory `unlocked`/`hydrated` flags
       // or actions — a locked profile must re-authenticate on each launch.
-      partialize: (s) => ({ medications: s.medications, logs: s.logs, profile: s.profile }),
+      partialize: (s) => ({
+        medications: s.medications,
+        logs: s.logs,
+        profile: s.profile,
+        session: s.session,
+      }),
       onRehydrateStorage: () => () => {
         useAppStore.setState({ hydrated: true });
       },

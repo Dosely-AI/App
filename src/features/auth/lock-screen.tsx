@@ -1,6 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
@@ -42,27 +51,55 @@ export function LockScreen() {
   return (
     <Screen>
       <View style={styles.content}>
-        <View style={[styles.iconWrap, { backgroundColor: theme.backgroundElement }]}>
-          <Ionicons name={iconName} size={44} color={theme.tint} />
-        </View>
-        <Text style={[styles.title, { color: theme.text }]}>
-          {name ? `Welcome back, ${name}` : 'Welcome back'}
-        </Text>
-        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-          Unlock DoselyAI with {label} to continue.
-        </Text>
+        <PulsingIcon name={iconName} />
+        <Animated.View entering={FadeInDown.duration(500).delay(120)} style={styles.headings}>
+          <Text style={[styles.title, { color: theme.text }]}>
+            {name ? `Welcome back, ${name}` : 'Welcome back'}
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+            Unlock DoselyAI with {label} to continue.
+          </Text>
+        </Animated.View>
 
-        <View style={styles.actions}>
+        <Animated.View entering={FadeIn.duration(500).delay(280)} style={styles.actions}>
           <Button title={`Unlock with ${label}`} onPress={tryUnlock} loading={busy} />
           <Button title="Not you? Sign out" variant="ghost" onPress={signOut} />
-        </View>
+        </Animated.View>
       </View>
     </Screen>
   );
 }
 
+/** The lock badge, breathing gently so the screen feels alive while waiting. */
+function PulsingIcon({ name }: { name: 'scan-outline' | 'finger-print' }) {
+  const theme = useTheme();
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.06, { duration: 1100 }),
+        withTiming(1, { duration: 1100 }),
+      ),
+      -1,
+      false,
+    );
+  }, [scale]);
+
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  return (
+    <Animated.View
+      entering={FadeIn.duration(500)}
+      style={[styles.iconWrap, { backgroundColor: theme.backgroundElement }, style]}>
+      <Ionicons name={name} size={44} color={theme.tint} />
+    </Animated.View>
+  );
+}
+
 const styles = StyleSheet.create({
   content: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.three },
+  headings: { alignItems: 'center', gap: Spacing.three },
   iconWrap: {
     width: 96,
     height: 96,

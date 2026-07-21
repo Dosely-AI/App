@@ -48,6 +48,12 @@
         {
           "faceIDPermission": "Allow DoselyAI to use Face ID to unlock the app."
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow DoselyAI to use the camera to scan the barcode or label on your medication."
+        }
       ]
     ],
     "experiments": {
