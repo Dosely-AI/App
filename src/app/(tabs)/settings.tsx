@@ -196,6 +196,23 @@ export default function SettingsScreen() {
           </Card>
         </Pressable>
 
+        <Pressable onPress={() => router.push('/sharing')}>
+          <Card>
+            <View style={styles.navRow}>
+              <View style={[styles.navIcon, { backgroundColor: theme.tint }]}>
+                <Ionicons name="people" size={20} color="#FFFFFF" />
+              </View>
+              <View style={styles.flex}>
+                <Text style={[styles.title, { color: theme.text, marginBottom: 2 }]}>Caregivers & sharing</Text>
+                <Text style={[styles.desc, { color: theme.textSecondary, marginBottom: 0 }]}>
+                  Invite a family member to see your meds, or care for someone else.
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </View>
+          </Card>
+        </Pressable>
+
         <Card>
           <Text style={[styles.title, { color: theme.text }]}>Dose reminders</Text>
           <Text style={[styles.desc, { color: theme.textSecondary }]}>

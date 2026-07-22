@@ -96,6 +96,51 @@ export function setUserData(userId: string, data: unknown, updatedAt: string): v
   userData.set(userId, { data, updatedAt });
 }
 
+/**
+ * Caregiver sharing. A patient creates a short-lived invite code; a caregiver
+ * redeems it, which creates a directed link (caregiver may read that patient).
+ * Links are stored as "caregiverId:patientId" keys.
+ */
+type Invite = { patientId: string; expiresAt: number };
+const invites = new Map<string, Invite>();
+const links = new Set<string>();
+
+const linkKey = (caregiverId: string, patientId: string) => `${caregiverId}:${patientId}`;
+
+/** Create a single-use invite code for a patient (valid ~24h). */
+export function createInvite(patientId: string): { code: string; expiresAt: string } {
+  const code = randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase();
+  const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+  invites.set(code, { patientId, expiresAt });
+  return { code, expiresAt: new Date(expiresAt).toISOString() };
+}
+
+/** Redeem an invite — links the caregiver to the patient. Returns the patient id. */
+export function acceptInvite(code: string, caregiverId: string): string | null {
+  const invite = invites.get(code.trim().toUpperCase());
+  if (!invite || invite.expiresAt < Date.now()) return null;
+  if (invite.patientId === caregiverId) return null; // can't care for yourself
+  invites.delete(code.trim().toUpperCase());
+  links.add(linkKey(caregiverId, invite.patientId));
+  return invite.patientId;
+}
+
+export function isLinked(caregiverId: string, patientId: string): boolean {
+  return links.has(linkKey(caregiverId, patientId));
+}
+
+export function patientsForCaregiver(caregiverId: string): string[] {
+  return [...links].filter((k) => k.startsWith(`${caregiverId}:`)).map((k) => k.split(':')[1] as string);
+}
+
+export function caregiversForPatient(patientId: string): string[] {
+  return [...links].filter((k) => k.endsWith(`:${patientId}`)).map((k) => k.split(':')[0] as string);
+}
+
+export function unlink(caregiverId: string, patientId: string): void {
+  links.delete(linkKey(caregiverId, patientId));
+}
+
 export function startFlow(challenge: string, userId?: string): string {
   const flowId = randomUUID();
   flows.set(flowId, { challenge, userId, expiresAt: Date.now() + FLOW_TTL_MS });

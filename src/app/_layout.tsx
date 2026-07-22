@@ -40,6 +40,8 @@ export default function RootLayout() {
               <Stack.Screen name="emergency" options={{ title: 'Emergency card' }} />
               <Stack.Screen name="visit-summary" options={{ title: 'Visit summary' }} />
               <Stack.Screen name="interactions" options={{ title: 'Interactions' }} />
+              <Stack.Screen name="sharing" options={{ title: 'Caregivers & sharing' }} />
+              <Stack.Screen name="care/[id]" options={{ title: 'Patient' }} />
             </Stack>
           </AuthGate>
           <StatusBar style="auto" />
