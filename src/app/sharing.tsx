@@ -12,9 +12,11 @@ import { useTheme } from '@/hooks/use-theme';
 import {
   acceptInvite,
   createInvite,
+  getPatient,
   listMyCaregivers,
   listPatients,
   revokeCaregiver,
+  summarizePatient,
   type PatientRef,
 } from '@/lib/caregiver/caregiver-client';
 import { shareText } from '@/lib/share';
@@ -28,14 +30,24 @@ export default function SharingScreen() {
 
   const [patients, setPatients] = useState<PatientRef[]>([]);
   const [caregivers, setCaregivers] = useState<PatientRef[]>([]);
+  const [alerts, setAlerts] = useState<Record<string, number>>({});
   const [code, setCode] = useState('');
   const [invite, setInvite] = useState<{ code: string; expiresAt: string } | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!token) return;
-    setPatients(await listPatients(token));
+    const ps = await listPatients(token);
+    setPatients(ps);
     setCaregivers(await listMyCaregivers(token));
+    // Load each patient's missed-dose count for the alert badges.
+    const entries = await Promise.all(
+      ps.map(async (p) => {
+        const res = await getPatient(token, p.id);
+        return [p.id, res ? summarizePatient(res.data).missedToday.length : 0] as const;
+      }),
+    );
+    setAlerts(Object.fromEntries(entries));
   }, [token]);
 
   useEffect(() => {
@@ -91,15 +103,25 @@ export default function SharingScreen() {
             </Text>
           ) : (
             <View style={{ gap: Spacing.two, marginTop: Spacing.two }}>
-              {patients.map((p) => (
-                <Pressable key={p.id} onPress={() => router.push(`/care/${p.id}`)} style={styles.row}>
-                  <View style={[styles.avatar, { backgroundColor: theme.tint }]}>
-                    <Text style={styles.avatarText}>{(p.name || '?').charAt(0).toUpperCase()}</Text>
-                  </View>
-                  <Text style={[styles.name, { color: theme.text }]}>{p.name || 'Someone'}</Text>
-                  <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
-                </Pressable>
-              ))}
+              {[...patients]
+                .sort((a, b) => (alerts[b.id] ?? 0) - (alerts[a.id] ?? 0))
+                .map((p) => {
+                  const missed = alerts[p.id] ?? 0;
+                  return (
+                    <Pressable key={p.id} onPress={() => router.push(`/care/${p.id}`)} style={styles.row}>
+                      <View style={[styles.avatar, { backgroundColor: missed > 0 ? theme.danger : theme.tint }]}>
+                        <Text style={styles.avatarText}>{(p.name || '?').charAt(0).toUpperCase()}</Text>
+                      </View>
+                      <Text style={[styles.name, { color: theme.text }]}>{p.name || 'Someone'}</Text>
+                      {missed > 0 ? (
+                        <View style={[styles.badge, { backgroundColor: theme.danger }]}>
+                          <Text style={styles.badgeText}>{missed} missed</Text>
+                        </View>
+                      ) : null}
+                      <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+                    </Pressable>
+                  );
+                })}
             </View>
           )}
           <View style={{ height: Spacing.three }} />
@@ -166,6 +188,8 @@ const styles = StyleSheet.create({
   avatar: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#FFFFFF', fontWeight: '800' },
   name: { flex: 1, fontSize: 16, fontWeight: '600' },
+  badge: { paddingHorizontal: Spacing.two, paddingVertical: 3, borderRadius: 999 },
+  badgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   revoke: { fontSize: 14, fontWeight: '700' },
   codeBox: { borderWidth: 1.5, borderRadius: 16, padding: Spacing.three, alignItems: 'center' },
   code: { fontSize: 30, fontWeight: '800', letterSpacing: 4 },

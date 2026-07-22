@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Spacing, type ThemeColor } from '@/constants/theme';
 import { parseDateKey } from '@/features/adherence/dates';
+import { formatTime12 } from '@/features/medications/schedule';
 import { severityLabel } from '@/features/health/visit-summary';
 import { getPatient, summarizePatient, type PatientSummary } from '@/lib/caregiver/caregiver-client';
 import { useTheme } from '@/hooks/use-theme';
@@ -67,8 +68,32 @@ export default function PatientCareScreen() {
           </Card>
         ) : (
           <>
+            {/* Missed-dose alert — the caregiver's most important signal */}
+            {summary.missedToday.length > 0 ? (
+              <Animated.View entering={FadeInDown.duration(400)}>
+                <Card style={{ borderColor: theme.danger, borderWidth: 1.5 }}>
+                  <View style={styles.flagHead}>
+                    <Ionicons name="alert-circle" size={22} color={theme.danger} />
+                    <Text style={[styles.flagTitle, { color: theme.danger }]}>
+                      {summary.missedToday.length} missed dose{summary.missedToday.length === 1 ? '' : 's'} today
+                    </Text>
+                  </View>
+                  <View style={{ gap: Spacing.two, marginTop: Spacing.two }}>
+                    {summary.missedToday.map((mDose, i) => (
+                      <View key={i} style={styles.rowBetween}>
+                        <Text style={[styles.name, { color: theme.text }]}>{mDose.name}</Text>
+                        <Text style={{ color: theme.danger, fontWeight: '600' }}>
+                          {formatTime12(mDose.time)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </Card>
+              </Animated.View>
+            ) : null}
+
             {/* Today */}
-            <Animated.View entering={FadeInDown.duration(400)}>
+            <Animated.View entering={FadeInDown.duration(400).delay(40)}>
               <Card>
                 <Text style={[styles.label, { color: theme.textSecondary }]}>Today</Text>
                 {summary.todayTotal === 0 ? (

@@ -3,10 +3,12 @@ import {
   currentStreak,
   expectedSlots,
   generateTips,
+  missedDoses,
   overall,
   perMed,
   ratingFor,
 } from '@/features/adherence/adherence';
+import { dateKey } from '@/features/adherence/dates';
 import type { DoseLog, Medication } from '@/store/types';
 
 const med = (over: Partial<Medication> = {}): Medication => ({
@@ -58,6 +60,33 @@ describe('expectedSlots', () => {
     expect(daily[1].pct).toBeNull();
     expect(daily[2].pct).toBe(100);
     expect(overall(daily).pct).toBe(100); // not 33%
+  });
+});
+
+describe('missedDoses', () => {
+  const today = dateKey(new Date());
+  const at = (h: number) => new Date(`${today}T${String(h).padStart(2, '0')}:00:00`);
+  const m = med({ id: 'a', times: ['08:00', '20:00'], createdAt: '2020-01-01T00:00:00.000Z' });
+
+  it('flags a past, unlogged dose', () => {
+    const missed = missedDoses([m], [], at(10)); // 10am: 08:00 is past, 20:00 not yet
+    expect(missed.map((x) => x.time)).toEqual(['08:00']);
+  });
+
+  it('does not flag a dose that was taken', () => {
+    const missed = missedDoses([m], [log('a', today, '08:00')], at(10));
+    expect(missed).toEqual([]);
+  });
+
+  it('respects the grace period (a barely-late dose is not yet missed)', () => {
+    // 08:20 with a 30-min grace → 08:00 slot not counted yet.
+    const missed = missedDoses([m], [], new Date(`${today}T08:20:00`));
+    expect(missed).toEqual([]);
+  });
+
+  it('flags both when the whole day has passed', () => {
+    const missed = missedDoses([m], [], at(23));
+    expect(missed.map((x) => x.time)).toEqual(['08:00', '20:00']);
   });
 });
 

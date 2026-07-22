@@ -2,6 +2,7 @@ import {
   computeDaily,
   currentStreak,
   expectedSlots,
+  missedDoses,
   overall,
   ratingFor,
 } from '@/features/adherence/adherence';
@@ -27,6 +28,8 @@ export type PatientSummary = {
   adherencePct: number | null;
   ratingLabel: string;
   streak: number;
+  /** Doses due earlier today that haven't been taken — the caregiver alert. */
+  missedToday: { name: string; time: string }[];
   refillsLow: { name: string; daysLeft: number | null; out: boolean }[];
   recentSymptoms: { date: string; severity: number; note: string }[];
 };
@@ -57,6 +60,7 @@ export function summarizePatient(data: unknown): PatientSummary {
     adherencePct: totals.pct,
     ratingLabel: ratingFor(totals.pct).label,
     streak: currentStreak(meds, logs, days),
+    missedToday: missedDoses(meds, logs).map((x) => ({ name: x.name, time: x.time })),
     refillsLow: upcomingRefills(meds)
       .filter((r) => r.status.level === 'soon' || r.status.level === 'out')
       .map((r) => ({ name: r.med.name, daysLeft: r.status.daysLeft, out: r.status.level === 'out' })),
