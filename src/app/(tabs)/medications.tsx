@@ -35,6 +35,14 @@ export default function MedicationsScreen() {
           </View>
         </View>
 
+        {medications.length >= 2 ? (
+          <Button
+            title="⚠️  Check interactions"
+            variant="secondary"
+            onPress={() => router.push('/interactions')}
+          />
+        ) : null}
+
         {medications.length === 0 ? (
           <Animated.View entering={FadeInDown.duration(400)}>
             <Card>

@@ -15,12 +15,15 @@ export type MedOverview = {
   uses: string | null;
   /** A short, truncated safety note from labeling. */
   warning: string | null;
+  /** The label's "Drug Interactions" section, when present. */
+  interactions: string | null;
 };
 
 type LabelResult = {
   purpose?: string[];
   indications_and_usage?: string[];
   warnings?: string[];
+  drug_interactions?: string[];
   openfda?: { brand_name?: string[]; generic_name?: string[] };
 };
 
@@ -40,6 +43,7 @@ export function extractOverview(result: LabelResult): MedOverview {
     purpose: firstClean(result.purpose, 400),
     uses: firstClean(result.indications_and_usage, 700),
     warning: firstClean(result.warnings, 300),
+    interactions: firstClean(result.drug_interactions, 900),
   };
 }
 
