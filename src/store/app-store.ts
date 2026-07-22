@@ -2,7 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { AuthSession, DoseLog, Medication, Profile } from './types';
+import { dateKey } from '@/features/adherence/dates';
+
+import type { AuthSession, DoseLog, EmergencyInfo, Medication, Profile, SymptomLog } from './types';
 
 /** Fields a caller provides; id and createdAt are assigned by the store. */
 export type MedicationInput = Omit<Medication, 'id' | 'createdAt'>;
@@ -28,6 +30,15 @@ type AppState = {
 
   logDose: (medId: string, date: string, time: string) => void;
   unlogDose: (medId: string, date: string, time: string) => void;
+
+  /** Symptom / how-you-feel journal. */
+  symptoms: SymptomLog[];
+  addSymptom: (note: string, severity: number) => void;
+  removeSymptom: (id: string) => void;
+
+  /** Emergency medical card details (null until the user fills it in). */
+  emergency: EmergencyInfo | null;
+  setEmergency: (info: EmergencyInfo) => void;
 
   /** Store a passkey session after a successful sign up / sign in. */
   setSession: (session: AuthSession) => void;
@@ -55,6 +66,8 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       medications: [],
       logs: [],
+      symptoms: [],
+      emergency: null,
       profile: null,
       session: null,
       unlocked: false,
@@ -86,6 +99,24 @@ export const useAppStore = create<AppState>()(
       unlogDose: (medId, date, time) =>
         set((s) => ({ logs: s.logs.filter((l) => !sameSlot(l, medId, date, time)) })),
 
+      addSymptom: (note, severity) =>
+        set((s) => ({
+          symptoms: [
+            {
+              id: newId(),
+              date: dateKey(new Date()),
+              severity,
+              note: note.trim(),
+              createdAt: new Date().toISOString(),
+            },
+            ...s.symptoms,
+          ],
+        })),
+
+      removeSymptom: (id) => set((s) => ({ symptoms: s.symptoms.filter((x) => x.id !== id) })),
+
+      setEmergency: (info) => set({ emergency: info }),
+
       setSession: (session) => set({ session }),
 
       setProfile: (name, biometricLock) =>
@@ -103,7 +134,15 @@ export const useAppStore = create<AppState>()(
       signOut: () => set({ profile: null, session: null, unlocked: false }),
 
       resetAll: () =>
-        set({ medications: [], logs: [], profile: null, session: null, unlocked: false }),
+        set({
+          medications: [],
+          logs: [],
+          symptoms: [],
+          emergency: null,
+          profile: null,
+          session: null,
+          unlocked: false,
+        }),
     }),
     {
       name: 'dosely-store-v1',
@@ -113,6 +152,8 @@ export const useAppStore = create<AppState>()(
       partialize: (s) => ({
         medications: s.medications,
         logs: s.logs,
+        symptoms: s.symptoms,
+        emergency: s.emergency,
         profile: s.profile,
         session: s.session,
       }),
