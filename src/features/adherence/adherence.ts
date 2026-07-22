@@ -1,10 +1,15 @@
 import { formatTime12 } from '@/features/medications/schedule';
 import type { DoseLog, Medication } from '@/store/types';
 
-import { dayOfWeek } from './dates';
+import { dateKey, dayOfWeek } from './dates';
 
-/** Does this medication apply on the given date? Empty days list = every day. */
+/**
+ * Does this medication apply on the given date? A medication is never expected
+ * before the day it was added (so days prior to it don't count as "missed"),
+ * and an empty days-of-week list means every day.
+ */
 export function dayApplies(med: Medication, date: string): boolean {
+  if (date < dateKey(new Date(med.createdAt))) return false;
   if (med.daysOfWeek.length === 0) return true;
   return med.daysOfWeek.includes(dayOfWeek(date));
 }
