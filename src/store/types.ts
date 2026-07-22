@@ -54,3 +54,27 @@ export type DoseLog = {
   time: string; // 'HH:MM' slot it fulfills
   takenAt: string; // ISO timestamp when logged
 };
+
+/** A symptom / how-you-feel entry the user records over time. */
+export type SymptomLog = {
+  id: string;
+  date: string; // 'YYYY-MM-DD' (local)
+  /** 1 (very mild) … 5 (very severe). */
+  severity: number;
+  note: string;
+  createdAt: string; // ISO
+};
+
+/**
+ * Emergency medical card details. Kept on-device like everything else; the user
+ * can show or share it in an emergency. Medications are pulled live from the
+ * medication list, so only the extra fields live here.
+ */
+export type EmergencyInfo = {
+  allergies: string;
+  conditions: string;
+  bloodType: string;
+  contactName: string;
+  contactPhone: string;
+  notes: string;
+};

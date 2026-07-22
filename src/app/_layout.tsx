@@ -34,6 +34,9 @@ export default function RootLayout() {
               <Stack.Screen name="medication/new" options={{ title: 'Add medication' }} />
               <Stack.Screen name="medication/scan" options={{ title: 'Scan medication' }} />
               <Stack.Screen name="medication/[id]" options={{ title: 'Medication' }} />
+              <Stack.Screen name="journal" options={{ title: 'How you feel' }} />
+              <Stack.Screen name="emergency" options={{ title: 'Emergency card' }} />
+              <Stack.Screen name="visit-summary" options={{ title: 'Visit summary' }} />
             </Stack>
           </AuthGate>
           <StatusBar style="auto" />

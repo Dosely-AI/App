@@ -41,6 +41,24 @@ describe('expectedSlots', () => {
     expect(expectedSlots(med({ daysOfWeek: [dow] }), key)).toHaveLength(2);
     expect(expectedSlots(med({ daysOfWeek: [(dow + 1) % 7] }), key)).toEqual([]);
   });
+
+  it('is not expected before the medication was added', () => {
+    const m = med({ createdAt: '2026-07-10T12:00:00.000Z' });
+    expect(expectedSlots(m, '2026-07-08')).toEqual([]); // before it existed
+    expect(expectedSlots(m, '2026-07-10')).toHaveLength(2); // the day it was added
+    expect(expectedSlots(m, '2026-07-12')).toHaveLength(2); // after
+  });
+
+  it('does not let pre-existence days drag down adherence', () => {
+    // Added 07-10, took both doses that day; days 07-08/09 must not count as missed.
+    const m = med({ id: 'x', createdAt: '2026-07-10T12:00:00.000Z' });
+    const taken = [log('x', '2026-07-10', '08:00'), log('x', '2026-07-10', '20:00')];
+    const daily = computeDaily([m], taken, ['2026-07-08', '2026-07-09', '2026-07-10']);
+    expect(daily[0].pct).toBeNull(); // no data before it existed
+    expect(daily[1].pct).toBeNull();
+    expect(daily[2].pct).toBe(100);
+    expect(overall(daily).pct).toBe(100); // not 33%
+  });
 });
 
 describe('computeDaily / overall / perMed', () => {

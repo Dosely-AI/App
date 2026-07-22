@@ -1,6 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { Disclaimer } from '@/components/disclaimer';
 import { Screen } from '@/components/screen';
@@ -21,6 +23,7 @@ import { useAppStore } from '@/store/app-store';
 
 export default function SettingsScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const resetAll = useAppStore((s) => s.resetAll);
   const medications = useAppStore((s) => s.medications);
   const profile = useAppStore((s) => s.profile);
@@ -176,6 +179,23 @@ export default function SettingsScreen() {
           </Card>
         )}
 
+        <Pressable onPress={() => router.push('/emergency')}>
+          <Card>
+            <View style={styles.navRow}>
+              <View style={[styles.navIcon, { backgroundColor: theme.danger }]}>
+                <Ionicons name="medkit" size={20} color="#FFFFFF" />
+              </View>
+              <View style={styles.flex}>
+                <Text style={[styles.title, { color: theme.text, marginBottom: 2 }]}>Emergency medical card</Text>
+                <Text style={[styles.desc, { color: theme.textSecondary, marginBottom: 0 }]}>
+                  Allergies, conditions, and a contact — shareable in an emergency.
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </View>
+          </Card>
+        </Pressable>
+
         <Card>
           <Text style={[styles.title, { color: theme.text }]}>Dose reminders</Text>
           <Text style={[styles.desc, { color: theme.textSecondary }]}>
@@ -251,6 +271,8 @@ const styles = StyleSheet.create({
   version: { textAlign: 'center', fontSize: 13 },
   lockRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, marginTop: Spacing.four },
   lockText: { flex: 1, gap: 2 },
+  navRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  navIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   lockTitle: { fontSize: 16, fontWeight: '700' },
   lockDesc: { fontSize: 13, lineHeight: 18 },
 });

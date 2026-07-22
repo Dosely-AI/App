@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useEffect, useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   FadeInDown,
   useAnimatedStyle,
@@ -15,7 +16,9 @@ import { AuroraBackground } from '@/components/ui/aurora-background';
 import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { ProgressRing } from '@/components/ui/progress-ring';
+import { Button } from '@/components/ui/button';
 import { Spacing, accentFor } from '@/constants/theme';
+import { severityLabel } from '@/features/health/visit-summary';
 import {
   computeDaily,
   currentStreak,
@@ -24,13 +27,15 @@ import {
   perMed,
   ratingFor,
 } from '@/features/adherence/adherence';
-import { lastNDays, parseDateKey } from '@/features/adherence/dates';
+import { dateKey, lastNDays, parseDateKey } from '@/features/adherence/dates';
 import { upcomingRefills, type MedRefill } from '@/features/refill/refill';
 import { type ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAppStore } from '@/store/app-store';
 
 const WINDOW = 14;
+/** Widest span the daily-trend chart will show, once tracking has run a while. */
+const CHART_MAX_DAYS = 30;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 type Theme = Record<ThemeColor, string>;
@@ -93,20 +98,36 @@ function RefillRow({ refill, theme }: { refill: MedRefill; theme: Theme }) {
 
 export default function InsightsScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const medications = useAppStore((s) => s.medications);
   const logs = useAppStore((s) => s.logs);
+  const symptoms = useAppStore((s) => s.symptoms);
 
   const data = useMemo(() => {
     const days = lastNDays(WINDOW);
     const daily = computeDaily(medications, logs, days);
     return {
-      daily,
       totals: overall(daily),
       byMed: perMed(medications, logs, days),
       streak: currentStreak(medications, logs, days),
       tips: generateTips(medications, logs, days),
       refills: upcomingRefills(medications),
     };
+  }, [medications, logs]);
+
+  // The trend chart begins the day the first medication was added, not a fixed
+  // window back — so it never shows empty "pre-tracking" days. Capped so a
+  // long-time user still gets a readable recent view.
+  const chartDaily = useMemo(() => {
+    if (medications.length === 0) return computeDaily(medications, logs, lastNDays(WINDOW));
+    const today = new Date();
+    let earliest = dateKey(today);
+    for (const m of medications) {
+      const k = dateKey(new Date(m.createdAt));
+      if (k < earliest) earliest = k;
+    }
+    const span = Math.round((today.getTime() - parseDateKey(earliest).getTime()) / 86_400_000) + 1;
+    return computeDaily(medications, logs, lastNDays(Math.min(Math.max(span, 1), CHART_MAX_DAYS)));
   }, [medications, logs]);
 
   if (medications.length === 0) {
@@ -191,16 +212,16 @@ export default function InsightsScreen() {
           <Card>
             <Text style={[styles.cardLabel, { color: theme.textSecondary }]}>Daily adherence</Text>
             <View style={styles.chart}>
-              {data.daily.map((d, i) => (
+              {chartDaily.map((d, i) => (
                 <ChartBar key={d.date} pct={d.pct} color={toneColor(theme, d.pct)} delay={i * 40} />
               ))}
             </View>
             <View style={styles.axis}>
               <Text style={{ color: theme.textSecondary, fontSize: 12 }}>
-                {shortDay(data.daily[0].date)}
+                {shortDay(chartDaily[0].date)}
               </Text>
               <Text style={{ color: theme.textSecondary, fontSize: 12 }}>
-                {shortDay(data.daily[data.daily.length - 1].date)}
+                {shortDay(chartDaily[chartDaily.length - 1].date)}
               </Text>
             </View>
           </Card>
@@ -251,6 +272,39 @@ export default function InsightsScreen() {
           </Card>
         </Animated.View>
 
+        {/* How you're feeling — symptom journal */}
+        <Animated.View entering={FadeInDown.duration(450).delay(400)}>
+          <Card>
+            <View style={styles.rowBetween}>
+              <Text style={[styles.cardLabel, { color: theme.textSecondary }]}>How you’re feeling</Text>
+              <Pressable onPress={() => router.push('/journal')} hitSlop={8}>
+                <Text style={[styles.link, { color: theme.tint }]}>Log</Text>
+              </Pressable>
+            </View>
+            {symptoms.length === 0 ? (
+              <Text style={[styles.blurb, { color: theme.textSecondary, textAlign: 'left', marginTop: Spacing.two }]}>
+                Track symptoms over time to spot patterns and share them with your doctor.
+              </Text>
+            ) : (
+              <View style={{ gap: Spacing.two, marginTop: Spacing.two }}>
+                {symptoms.slice(0, 3).map((s) => (
+                  <View key={s.id} style={styles.medHeader}>
+                    <Text style={[styles.medName, { color: theme.text }]} numberOfLines={1}>
+                      {s.note || 'Symptom'}
+                    </Text>
+                    <Text style={{ color: theme.textSecondary }}>{severityLabel(s.severity)}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </Card>
+        </Animated.View>
+
+        {/* Doctor visit summary */}
+        <Animated.View entering={FadeInDown.duration(450).delay(460)}>
+          <Button title="📄  Prepare for a doctor visit" variant="secondary" onPress={() => router.push('/visit-summary')} />
+        </Animated.View>
+
         <Disclaimer />
       </ScrollView>
     </Screen>
@@ -263,6 +317,8 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 20, fontWeight: '700' },
   emptyText: { fontSize: 15, lineHeight: 21, textAlign: 'center' },
   cardLabel: { fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
+  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  link: { fontSize: 14, fontWeight: '700' },
   ringWrap: { alignItems: 'center', marginVertical: Spacing.four },
   ringPct: { fontSize: 40, fontWeight: '800' },
   ringLabel: { fontSize: 14, fontWeight: '600', marginTop: 2 },
