@@ -7,6 +7,7 @@ import { AuthGate } from '@/features/auth/auth-gate';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReminders } from '@/hooks/use-reminders';
 import { useTheme } from '@/hooks/use-theme';
+import { useSync } from '@/lib/sync/use-sync';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -16,6 +17,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const theme = useTheme();
   useReminders();
+  useSync();
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -37,6 +39,7 @@ export default function RootLayout() {
               <Stack.Screen name="journal" options={{ title: 'How you feel' }} />
               <Stack.Screen name="emergency" options={{ title: 'Emergency card' }} />
               <Stack.Screen name="visit-summary" options={{ title: 'Visit summary' }} />
+              <Stack.Screen name="interactions" options={{ title: 'Interactions' }} />
             </Stack>
           </AuthGate>
           <StatusBar style="auto" />

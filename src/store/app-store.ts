@@ -40,6 +40,11 @@ type AppState = {
   emergency: EmergencyInfo | null;
   setEmergency: (info: EmergencyInfo) => void;
 
+  /** Logical modification time of the synced data (ISO), or null if never set. */
+  dataUpdatedAt: string | null;
+  /** Adopt a full snapshot pulled from the account (server wins). */
+  applyServerData: (data: unknown, updatedAt: string) => void;
+
   /** Store a passkey session after a successful sign up / sign in. */
   setSession: (session: AuthSession) => void;
   /** Create or replace the local profile (used by sign up and profile edit). */
@@ -58,6 +63,14 @@ function newId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+/** Logical modification time for synced data — LWW uses it to resolve conflicts. */
+function stamp(): string {
+  return new Date().toISOString();
+}
+
+/** The subset of state that syncs to the account. */
+export type SyncedData = Pick<AppState, 'medications' | 'logs' | 'symptoms' | 'emergency'>;
+
 const sameSlot = (l: DoseLog, medId: string, date: string, time: string) =>
   l.medId === medId && l.date === date && l.time === time;
 
@@ -68,6 +81,7 @@ export const useAppStore = create<AppState>()(
       logs: [],
       symptoms: [],
       emergency: null,
+      dataUpdatedAt: null,
       profile: null,
       session: null,
       unlocked: false,
@@ -75,29 +89,37 @@ export const useAppStore = create<AppState>()(
 
       addMedication: (input) => {
         const med: Medication = { ...input, id: newId(), createdAt: new Date().toISOString() };
-        set((s) => ({ medications: [...s.medications, med] }));
+        set((s) => ({ medications: [...s.medications, med], dataUpdatedAt: stamp() }));
         return med;
       },
 
       updateMedication: (id, input) =>
         set((s) => ({
           medications: s.medications.map((m) => (m.id === id ? { ...m, ...input } : m)),
+          dataUpdatedAt: stamp(),
         })),
 
       removeMedication: (id) =>
         set((s) => ({
           medications: s.medications.filter((m) => m.id !== id),
           logs: s.logs.filter((l) => l.medId !== id),
+          dataUpdatedAt: stamp(),
         })),
 
       logDose: (medId, date, time) =>
         set((s) => {
           if (s.logs.some((l) => sameSlot(l, medId, date, time))) return s;
-          return { logs: [...s.logs, { medId, date, time, takenAt: new Date().toISOString() }] };
+          return {
+            logs: [...s.logs, { medId, date, time, takenAt: new Date().toISOString() }],
+            dataUpdatedAt: stamp(),
+          };
         }),
 
       unlogDose: (medId, date, time) =>
-        set((s) => ({ logs: s.logs.filter((l) => !sameSlot(l, medId, date, time)) })),
+        set((s) => ({
+          logs: s.logs.filter((l) => !sameSlot(l, medId, date, time)),
+          dataUpdatedAt: stamp(),
+        })),
 
       addSymptom: (note, severity) =>
         set((s) => ({
@@ -111,11 +133,24 @@ export const useAppStore = create<AppState>()(
             },
             ...s.symptoms,
           ],
+          dataUpdatedAt: stamp(),
         })),
 
-      removeSymptom: (id) => set((s) => ({ symptoms: s.symptoms.filter((x) => x.id !== id) })),
+      removeSymptom: (id) =>
+        set((s) => ({ symptoms: s.symptoms.filter((x) => x.id !== id), dataUpdatedAt: stamp() })),
 
-      setEmergency: (info) => set({ emergency: info }),
+      setEmergency: (info) => set({ emergency: info, dataUpdatedAt: stamp() }),
+
+      applyServerData: (data, updatedAt) => {
+        const d = (data ?? {}) as Partial<SyncedData>;
+        set({
+          medications: Array.isArray(d.medications) ? d.medications : [],
+          logs: Array.isArray(d.logs) ? d.logs : [],
+          symptoms: Array.isArray(d.symptoms) ? d.symptoms : [],
+          emergency: d.emergency ?? null,
+          dataUpdatedAt: updatedAt,
+        });
+      },
 
       setSession: (session) => set({ session }),
 
@@ -139,6 +174,7 @@ export const useAppStore = create<AppState>()(
           logs: [],
           symptoms: [],
           emergency: null,
+          dataUpdatedAt: stamp(),
           profile: null,
           session: null,
           unlocked: false,
@@ -154,6 +190,7 @@ export const useAppStore = create<AppState>()(
         logs: s.logs,
         symptoms: s.symptoms,
         emergency: s.emergency,
+        dataUpdatedAt: s.dataUpdatedAt,
         profile: s.profile,
         session: s.session,
       }),

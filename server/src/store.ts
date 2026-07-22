@@ -80,6 +80,22 @@ type Flow = { challenge: string; userId?: string; expiresAt: number };
 const flows = new Map<string, Flow>();
 const FLOW_TTL_MS = 5 * 60 * 1000;
 
+/**
+ * Per-user application data blob (medications, dose logs, symptoms, emergency
+ * card). Stored opaquely — the server never needs to understand its shape, only
+ * to hand the same user's most recent copy back. Swap for a real DB in prod.
+ */
+type UserData = { data: unknown; updatedAt: string };
+const userData = new Map<string, UserData>();
+
+export function getUserData(userId: string): UserData | null {
+  return userData.get(userId) ?? null;
+}
+
+export function setUserData(userId: string, data: unknown, updatedAt: string): void {
+  userData.set(userId, { data, updatedAt });
+}
+
 export function startFlow(challenge: string, userId?: string): string {
   const flowId = randomUUID();
   flows.set(flowId, { challenge, userId, expiresAt: Date.now() + FLOW_TTL_MS });
