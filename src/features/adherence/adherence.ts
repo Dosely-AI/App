@@ -85,6 +85,36 @@ export function perMed(meds: Medication[], logs: DoseLog[], days: string[]): Med
   });
 }
 
+export type MissedDose = { medId: string; name: string; time: string };
+
+/**
+ * Doses scheduled for today whose time has passed (beyond a grace period) and
+ * that haven't been logged. This powers caregiver alerts — "Mom missed her 8am
+ * dose." A slot within the grace window isn't counted yet (it may just be late).
+ */
+export function missedDoses(
+  meds: Medication[],
+  logs: DoseLog[],
+  now: Date = new Date(),
+  graceMinutes = 30,
+): MissedDose[] {
+  const today = dateKey(now);
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const out: MissedDose[] = [];
+
+  for (const med of meds) {
+    for (const time of expectedSlots(med, today)) {
+      const [h, m] = time.split(':').map(Number);
+      if (Number.isNaN(h) || Number.isNaN(m)) continue;
+      // Only "missed" once the slot time plus grace has elapsed.
+      if (h * 60 + m + graceMinutes > nowMinutes) continue;
+      const taken = logs.some((l) => l.medId === med.id && l.date === today && l.time === time);
+      if (!taken) out.push({ medId: med.id, name: med.name, time });
+    }
+  }
+  return out;
+}
+
 /** Consecutive most-recent days fully taken. Days with nothing scheduled are
  * skipped (they neither break nor extend the streak). */
 export function currentStreak(meds: Medication[], logs: DoseLog[], days: string[]): number {

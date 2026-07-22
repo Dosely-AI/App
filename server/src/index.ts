@@ -4,15 +4,17 @@ import cors from 'cors';
 import express from 'express';
 
 import { config } from './config.js';
+import { caregiverRouter } from './routes/caregiver.js';
 import { chatRouter } from './routes/chat.js';
 import { registerRouter } from './routes/register.js';
 import { loginRouter } from './routes/login.js';
+import { syncRouter } from './routes/sync.js';
 import { verifySession } from './session.js';
 import { getUserById } from './store.js';
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 app.use(
   cors({
     origin: config.origins,
@@ -25,6 +27,8 @@ app.get('/health', (_req, res) => res.json({ ok: true, rpID: config.rpID }));
 app.use('/auth/register', registerRouter);
 app.use('/auth/login', loginRouter);
 app.use('/chat', chatRouter);
+app.use('/sync', syncRouter);
+app.use('/caregiver', caregiverRouter);
 
 /** Return the signed-in user for a bearer token, or 401. */
 app.get('/auth/me', (req, res) => {

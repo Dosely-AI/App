@@ -30,6 +30,7 @@ describe('extractOverview', () => {
       purpose: null,
       uses: null,
       warning: null,
+      interactions: null,
     });
   });
 });
