@@ -196,6 +196,23 @@ export default function SettingsScreen() {
           </Card>
         </Pressable>
 
+        <Pressable onPress={() => router.push('/refills')}>
+          <Card>
+            <View style={styles.navRow}>
+              <View style={[styles.navIcon, { backgroundColor: theme.warning }]}>
+                <Ionicons name="repeat" size={20} color="#FFFFFF" />
+              </View>
+              <View style={styles.flex}>
+                <Text style={[styles.title, { color: theme.text, marginBottom: 2 }]}>Refills & pharmacies</Text>
+                <Text style={[styles.desc, { color: theme.textSecondary, marginBottom: 0 }]}>
+                  See what&apos;s running low and request refills by call or text.
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </View>
+          </Card>
+        </Pressable>
+
         <Pressable onPress={() => router.push('/sharing')}>
           <Card>
             <View style={styles.navRow}>

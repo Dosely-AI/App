@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TiltPress } from '@/components/ui/tilt-press';
 import { Spacing, accentFor } from '@/constants/theme';
-import { summarizeSchedule } from '@/features/medications/schedule';
+import { describeSchedule } from '@/features/medications/schedule';
 import { useTheme } from '@/hooks/use-theme';
 import { useAppStore } from '@/store/app-store';
 
@@ -73,7 +73,7 @@ export default function MedicationsScreen() {
                         <Text style={{ color: theme.textSecondary }}>{subtitle}</Text>
                       ) : null}
                       <Text style={[styles.schedule, { color: accent.solid }]}>
-                        {summarizeSchedule(med.times, med.daysOfWeek)}
+                        {describeSchedule(med)}
                       </Text>
                     </View>
                     <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />

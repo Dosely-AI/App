@@ -34,3 +34,13 @@ export function summarizeSchedule(times: string[], days: number[]): string {
   const timeStr = sortTimes(times).map(formatTime12).join(', ');
   return `${summarizeDays(days)} · ${timeStr}`;
 }
+
+/** Schedule label that also accounts for as-needed medications. */
+export function describeSchedule(med: {
+  times: string[];
+  daysOfWeek: number[];
+  asNeeded?: boolean;
+}): string {
+  if (med.asNeeded) return 'As needed';
+  return summarizeSchedule(med.times, med.daysOfWeek);
+}

@@ -23,9 +23,9 @@ type Blob = {
 };
 
 const BLOBS: Blob[] = [
-  { color: '#6D8DFF', x: 0.15, y: 0.08, r: 0.55, drift: 18, duration: 9000 },
-  { color: '#8C5BF6', x: 0.9, y: 0.22, r: 0.45, drift: -22, duration: 11000 },
-  { color: '#12B5A5', x: 0.7, y: 0.85, r: 0.5, drift: 16, duration: 13000 },
+  { color: '#34EBB4', x: 0.15, y: 0.08, r: 0.55, drift: 18, duration: 9000 },
+  { color: '#12B5A5', x: 0.9, y: 0.22, r: 0.45, drift: -22, duration: 11000 },
+  { color: '#2C7DBF', x: 0.7, y: 0.85, r: 0.5, drift: 16, duration: 13000 },
 ];
 
 /**

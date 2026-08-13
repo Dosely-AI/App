@@ -33,11 +33,16 @@ export function formToInput(v: MedicationFormValues, prev?: PrevRefill): Medicat
     rxcui: v.rxcui,
     strength: v.strength.trim() || null,
     form: v.form.trim() || null,
-    times: v.times,
-    daysOfWeek: v.daysOfWeek,
+    // As-needed medications carry no schedule, so they never affect adherence.
+    times: v.asNeeded ? [] : v.times,
+    daysOfWeek: v.asNeeded ? [] : v.daysOfWeek,
+    asNeeded: v.asNeeded,
+    maxPerDay: v.asNeeded ? toNumber(v.maxPerDay) : null,
     pillsPerDose: toNumber(v.pillsPerDose),
     quantityOnHand,
     quantityAsOf,
     refillLeadDays: toNumber(v.refillLeadDays),
+    rxNumber: v.rxNumber.trim() || null,
+    pharmacyId: v.pharmacyId,
   };
 }

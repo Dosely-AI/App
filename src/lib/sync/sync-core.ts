@@ -35,9 +35,16 @@ export function serializeSynced(s: Pick<SyncedData, keyof SyncedData>): string {
     logs: s.logs,
     symptoms: s.symptoms,
     emergency: s.emergency,
+    pharmacies: s.pharmacies,
   });
 }
 
 export function pickSynced(s: SyncedData): SyncedData {
-  return { medications: s.medications, logs: s.logs, symptoms: s.symptoms, emergency: s.emergency };
+  return {
+    medications: s.medications,
+    logs: s.logs,
+    symptoms: s.symptoms,
+    emergency: s.emergency,
+    pharmacies: s.pharmacies,
+  };
 }
