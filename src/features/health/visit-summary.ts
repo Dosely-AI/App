@@ -1,6 +1,6 @@
 import { computeDaily, currentStreak, overall, ratingFor } from '@/features/adherence/adherence';
 import { lastNDays, parseDateKey } from '@/features/adherence/dates';
-import { summarizeSchedule } from '@/features/medications/schedule';
+import { describeSchedule } from '@/features/medications/schedule';
 import { upcomingRefills } from '@/features/refill/refill';
 import type { DoseLog, Medication, SymptomLog } from '@/store/types';
 
@@ -46,7 +46,7 @@ export function buildVisitSummary(ctx: VisitContext): string {
   } else {
     for (const m of ctx.medications) {
       const detail = [m.strength, m.form].filter(Boolean).join(' ');
-      lines.push(`• ${m.name}${detail ? ` (${detail})` : ''} — ${summarizeSchedule(m.times, m.daysOfWeek)}`);
+      lines.push(`• ${m.name}${detail ? ` (${detail})` : ''} — ${describeSchedule(m)}`);
     }
   }
 

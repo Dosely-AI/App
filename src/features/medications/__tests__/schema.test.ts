@@ -7,9 +7,13 @@ const base = {
   form: '',
   times: ['08:00'],
   daysOfWeek: [] as number[],
+  asNeeded: false,
   pillsPerDose: '',
   quantityOnHand: '',
   refillLeadDays: '',
+  maxPerDay: '',
+  rxNumber: '',
+  pharmacyId: null,
 };
 
 describe('medicationFormSchema', () => {
@@ -27,6 +31,10 @@ describe('medicationFormSchema', () => {
 
   it('requires at least one dose time', () => {
     expect(medicationFormSchema.safeParse({ ...base, times: [] }).success).toBe(false);
+  });
+
+  it('accepts an as-needed medication with no times', () => {
+    expect(medicationFormSchema.safeParse({ ...base, asNeeded: true, times: [] }).success).toBe(true);
   });
 
   it('rejects a malformed time', () => {

@@ -1,62 +1,48 @@
 import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
-import { HeroGradient } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
- * The Dosely mark: a two-tone capsule set on a gradient badge, with an AI
- * sparkle. Reads as "medication + intelligence" at any size. Pure SVG, so it
- * stays crisp on every screen density.
+ * The Dosely mark: a mint droplet with a forward chevron notched out of it, set
+ * on a deep-ink tile — "medication, moving forward / staying on track." Pure SVG
+ * so it stays crisp at any density, and self-contained so it reads on any
+ * background. Brand colors are fixed (they don't follow the theme).
  */
 export function DoselyLogo({ size = 44 }: { size?: number }) {
-  const scheme = useColorScheme();
-  const [g0, g1, g2] = HeroGradient[scheme === 'dark' ? 'dark' : 'light'];
+  const INK = '#0A1626';
+  const MINT = '#34EBB4';
 
   return (
-    <Svg width={size} height={size} viewBox="0 0 64 64">
+    <Svg width={size} height={size} viewBox="0 0 100 100">
       <Defs>
-        <LinearGradient id="doselyBadge" x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0%" stopColor={g0} />
-          <Stop offset="55%" stopColor={g1} />
-          <Stop offset="100%" stopColor={g2} />
+        <LinearGradient id="doselyTile" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0%" stopColor="#13253E" />
+          <Stop offset="100%" stopColor={INK} />
         </LinearGradient>
-        <LinearGradient id="doselyPillTop" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0%" stopColor="#FFFFFF" />
-          <Stop offset="100%" stopColor="#EAF0FF" />
-        </LinearGradient>
-        <LinearGradient id="doselyPillBottom" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0%" stopColor="#DDE6FF" />
-          <Stop offset="100%" stopColor="#C4D2FA" />
+        <LinearGradient id="doselyDrop" x1="0.3" y1="0.05" x2="0.7" y2="1">
+          <Stop offset="0%" stopColor="#5FF2C8" />
+          <Stop offset="100%" stopColor="#2ED6A6" />
         </LinearGradient>
       </Defs>
 
-      {/* Gradient badge */}
-      <Rect x="0" y="0" width="64" height="64" rx="17" fill="url(#doselyBadge)" />
+      {/* Ink tile with a faint mint-lit edge so it reads on any dark ground */}
+      <Rect x="0" y="0" width="100" height="100" rx="26" fill="url(#doselyTile)" />
+      <Rect x="1.25" y="1.25" width="97.5" height="97.5" rx="24.75" fill="none" stroke={MINT} strokeOpacity="0.16" strokeWidth="2" />
 
-      {/* Capsule, tilted — two halves with a seam */}
-      <G rotation={-38} originX={30} originY={34}>
-        <Rect x={9} y={26} width={42} height={16} rx={8} fill="url(#doselyPillTop)" />
-        {/* Bottom half overlaid to two-tone it */}
-        <Path
-          d="M30 26 H43 A8 8 0 0 1 43 42 H30 Z"
-          fill="url(#doselyPillBottom)"
-        />
-        {/* Seam */}
-        <Rect x={29} y={26} width={2} height={16} rx={1} fill="#0A1030" opacity={0.14} />
-        {/* Gloss */}
-        <Rect x={13} y={28.5} width={30} height={4} rx={2} fill="#FFFFFF" opacity={0.55} />
-      </G>
-
-      {/* AI sparkle */}
-      <G>
-        <Path
-          d="M47 13 L48.7 17.3 L53 19 L48.7 20.7 L47 25 L45.3 20.7 L41 19 L45.3 17.3 Z"
-          fill="#FFFFFF"
-        />
-        <Circle cx={17} cy={47} r={2.2} fill="#FFFFFF" opacity={0.85} />
-      </G>
+      {/* Mark: an upright mint droplet with a horizontal checkmark */}
+      <Path
+        d="M50 22 C 59 38, 72 48, 72 60 A 22 22 0 1 1 28 60 C 28 48, 41 38, 50 22 Z"
+        fill="url(#doselyDrop)"
+      />
+      <Path
+        d="M39 60 L47 67 L63 50"
+        fill="none"
+        stroke={INK}
+        strokeWidth={7.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }

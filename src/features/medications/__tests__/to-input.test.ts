@@ -10,9 +10,13 @@ const form = (over: Partial<MedicationFormValues> = {}): MedicationFormValues =>
   form: '',
   times: ['08:00'],
   daysOfWeek: [],
+  asNeeded: false,
   pillsPerDose: '',
   quantityOnHand: '',
   refillLeadDays: '',
+  maxPerDay: '',
+  rxNumber: '',
+  pharmacyId: null,
   ...over,
 });
 
@@ -59,5 +63,21 @@ describe('formToInput refill handling', () => {
     });
     expect(out.quantityOnHand).toBeNull();
     expect(out.quantityAsOf).toBeNull();
+  });
+});
+
+describe('formToInput as-needed handling', () => {
+  it('clears the schedule and keeps a daily max for as-needed meds', () => {
+    const out = formToInput(form({ asNeeded: true, times: ['08:00'], daysOfWeek: [1], maxPerDay: '4' }));
+    expect(out.asNeeded).toBe(true);
+    expect(out.times).toEqual([]);
+    expect(out.daysOfWeek).toEqual([]);
+    expect(out.maxPerDay).toBe(4);
+  });
+
+  it('leaves maxPerDay null for scheduled meds', () => {
+    const out = formToInput(form({ asNeeded: false, maxPerDay: '4' }));
+    expect(out.asNeeded).toBe(false);
+    expect(out.maxPerDay).toBeNull();
   });
 });

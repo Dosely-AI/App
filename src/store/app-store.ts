@@ -2,12 +2,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { DEFAULT_PALETTE } from '@/constants/palettes';
 import { dateKey } from '@/features/adherence/dates';
 
-import type { AuthSession, DoseLog, EmergencyInfo, Medication, Profile, SymptomLog } from './types';
+import type {
+  AuthSession,
+  DoseLog,
+  EmergencyInfo,
+  Medication,
+  Pharmacy,
+  Profile,
+  SymptomLog,
+} from './types';
 
 /** Fields a caller provides; id and createdAt are assigned by the store. */
 export type MedicationInput = Omit<Medication, 'id' | 'createdAt'>;
+
+/** Fields a caller provides for a pharmacy; id and createdAt are assigned by the store. */
+export type PharmacyInput = Omit<Pharmacy, 'id' | 'createdAt'>;
 
 type AppState = {
   medications: Medication[];
@@ -24,12 +36,21 @@ type AppState = {
   /** False until persisted data has been loaded from device storage. */
   hydrated: boolean;
 
+  /** Selected appearance palette id — recolors the accent + aurora wallpaper. */
+  palette: string;
+  setPalette: (id: string) => void;
+
   addMedication: (input: MedicationInput) => Medication;
   updateMedication: (id: string, input: MedicationInput) => void;
   removeMedication: (id: string) => void;
 
   logDose: (medId: string, date: string, time: string) => void;
   unlogDose: (medId: string, date: string, time: string) => void;
+
+  /** Log an as-needed (PRN) dose taken right now. */
+  logPrnDose: (medId: string) => void;
+  /** Remove today's most recently logged PRN dose (an "undo"). */
+  undoLastPrnDose: (medId: string) => void;
 
   /** Symptom / how-you-feel journal. */
   symptoms: SymptomLog[];
@@ -39,6 +60,13 @@ type AppState = {
   /** Emergency medical card details (null until the user fills it in). */
   emergency: EmergencyInfo | null;
   setEmergency: (info: EmergencyInfo) => void;
+
+  /** Pharmacies the user fills prescriptions at (empty until they add one). */
+  pharmacies: Pharmacy[];
+  addPharmacy: (input: PharmacyInput) => Pharmacy;
+  updatePharmacy: (id: string, input: PharmacyInput) => void;
+  /** Remove a pharmacy and unlink any medications that referenced it. */
+  removePharmacy: (id: string) => void;
 
   /** Logical modification time of the synced data (ISO), or null if never set. */
   dataUpdatedAt: string | null;
@@ -69,7 +97,7 @@ function stamp(): string {
 }
 
 /** The subset of state that syncs to the account. */
-export type SyncedData = Pick<AppState, 'medications' | 'logs' | 'symptoms' | 'emergency'>;
+export type SyncedData = Pick<AppState, 'medications' | 'logs' | 'symptoms' | 'emergency' | 'pharmacies'>;
 
 const sameSlot = (l: DoseLog, medId: string, date: string, time: string) =>
   l.medId === medId && l.date === date && l.time === time;
@@ -81,11 +109,13 @@ export const useAppStore = create<AppState>()(
       logs: [],
       symptoms: [],
       emergency: null,
+      pharmacies: [],
       dataUpdatedAt: null,
       profile: null,
       session: null,
       unlocked: false,
       hydrated: false,
+      palette: DEFAULT_PALETTE,
 
       addMedication: (input) => {
         const med: Medication = { ...input, id: newId(), createdAt: new Date().toISOString() };
@@ -121,6 +151,25 @@ export const useAppStore = create<AppState>()(
           dataUpdatedAt: stamp(),
         })),
 
+      logPrnDose: (medId) =>
+        set((s) => {
+          const now = new Date();
+          const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+          return {
+            logs: [...s.logs, { medId, date: dateKey(now), time, takenAt: now.toISOString() }],
+            dataUpdatedAt: stamp(),
+          };
+        }),
+
+      undoLastPrnDose: (medId) =>
+        set((s) => {
+          const today = dateKey(new Date());
+          const todays = s.logs.filter((l) => l.medId === medId && l.date === today);
+          if (todays.length === 0) return s;
+          const last = todays.reduce((a, b) => (a.takenAt > b.takenAt ? a : b));
+          return { logs: s.logs.filter((l) => l !== last), dataUpdatedAt: stamp() };
+        }),
+
       addSymptom: (note, severity) =>
         set((s) => ({
           symptoms: [
@@ -141,6 +190,25 @@ export const useAppStore = create<AppState>()(
 
       setEmergency: (info) => set({ emergency: info, dataUpdatedAt: stamp() }),
 
+      addPharmacy: (input) => {
+        const pharmacy: Pharmacy = { ...input, id: newId(), createdAt: new Date().toISOString() };
+        set((s) => ({ pharmacies: [...s.pharmacies, pharmacy], dataUpdatedAt: stamp() }));
+        return pharmacy;
+      },
+
+      updatePharmacy: (id, input) =>
+        set((s) => ({
+          pharmacies: s.pharmacies.map((p) => (p.id === id ? { ...p, ...input } : p)),
+          dataUpdatedAt: stamp(),
+        })),
+
+      removePharmacy: (id) =>
+        set((s) => ({
+          pharmacies: s.pharmacies.filter((p) => p.id !== id),
+          medications: s.medications.map((m) => (m.pharmacyId === id ? { ...m, pharmacyId: null } : m)),
+          dataUpdatedAt: stamp(),
+        })),
+
       applyServerData: (data, updatedAt) => {
         const d = (data ?? {}) as Partial<SyncedData>;
         set({
@@ -148,11 +216,14 @@ export const useAppStore = create<AppState>()(
           logs: Array.isArray(d.logs) ? d.logs : [],
           symptoms: Array.isArray(d.symptoms) ? d.symptoms : [],
           emergency: d.emergency ?? null,
+          pharmacies: Array.isArray(d.pharmacies) ? d.pharmacies : [],
           dataUpdatedAt: updatedAt,
         });
       },
 
       setSession: (session) => set({ session }),
+
+      setPalette: (palette) => set({ palette }),
 
       setProfile: (name, biometricLock) =>
         set((s) => ({
@@ -174,6 +245,7 @@ export const useAppStore = create<AppState>()(
           logs: [],
           symptoms: [],
           emergency: null,
+          pharmacies: [],
           dataUpdatedAt: stamp(),
           profile: null,
           session: null,
@@ -190,9 +262,11 @@ export const useAppStore = create<AppState>()(
         logs: s.logs,
         symptoms: s.symptoms,
         emergency: s.emergency,
+        pharmacies: s.pharmacies,
         dataUpdatedAt: s.dataUpdatedAt,
         profile: s.profile,
         session: s.session,
+        palette: s.palette,
       }),
       onRehydrateStorage: () => () => {
         useAppStore.setState({ hydrated: true });
