@@ -1,13 +1,17 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { Platform, type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+const RADIUS = 22;
+
 /**
- * A frosted-glass surface: a translucent panel with a lit top edge and a soft
- * drop shadow, so ambient color glows through and the card reads as a pane of
- * glass floating above the page. On web it uses a real backdrop blur; on native
- * the translucent fill + lit border carry the effect without a blur backdrop.
+ * A liquid-glass surface: a translucent, blurred pane with a lit top edge and a
+ * soft specular sheen across its upper half, floating on a gentle shadow — so
+ * ambient color refracts through and the card reads as a slab of frosted glass.
+ * On web it uses a real backdrop blur; on native the translucent fill + sheen +
+ * lit border carry the effect.
  */
 export function Card({
   children,
@@ -31,47 +35,64 @@ export function Card({
           borderRightColor: g.edgeSide,
           borderBottomColor: g.edgeBottom,
         },
-        // Real frosted glass in the browser; a no-op on native.
         Platform.OS === 'web' ? (WEB_GLASS as ViewStyle) : null,
         style,
       ]}>
+      {/* Specular sheen across the top — the glossy "glass" cue. */}
+      <LinearGradient
+        colors={g.sheen}
+        start={{ x: 0.1, y: 0 }}
+        end={{ x: 0.4, y: 1 }}
+        style={styles.sheen}
+        pointerEvents="none"
+      />
       {children}
     </View>
   );
 }
 
 const DARK = {
-  surface: 'rgba(16, 34, 57, 0.72)',
-  edgeTop: 'rgba(132, 240, 208, 0.22)',
+  surface: 'rgba(17, 35, 59, 0.62)',
+  edgeTop: 'rgba(150, 245, 214, 0.28)',
   edgeSide: 'rgba(130, 200, 220, 0.10)',
-  edgeBottom: 'rgba(4, 12, 24, 0.35)',
+  edgeBottom: 'rgba(3, 10, 22, 0.40)',
+  sheen: ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.02)', 'rgba(255,255,255,0)'] as const,
 };
 
 const LIGHT = {
-  surface: 'rgba(255, 255, 255, 0.86)',
+  surface: 'rgba(255, 255, 255, 0.78)',
   edgeTop: 'rgba(255, 255, 255, 0.95)',
-  edgeSide: 'rgba(10, 22, 38, 0.06)',
+  edgeSide: 'rgba(10, 22, 38, 0.05)',
   edgeBottom: 'rgba(10, 22, 38, 0.10)',
+  sheen: ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0)'] as const,
 };
 
 const WEB_GLASS = {
-  backdropFilter: 'blur(16px) saturate(1.4)',
-  WebkitBackdropFilter: 'blur(16px) saturate(1.4)',
+  backdropFilter: 'blur(22px) saturate(1.5)',
+  WebkitBackdropFilter: 'blur(22px) saturate(1.5)',
 };
 
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: RADIUS,
     padding: Spacing.four,
+    overflow: 'hidden',
+  },
+  sheen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '60%',
   },
   elevation: Platform.select({
     android: { elevation: 3 },
     default: {
-      shadowColor: '#020610',
-      shadowOpacity: 0.34,
-      shadowRadius: 22,
-      shadowOffset: { width: 0, height: 14 },
+      shadowColor: '#01060F',
+      shadowOpacity: 0.4,
+      shadowRadius: 26,
+      shadowOffset: { width: 0, height: 16 },
     },
   }),
 });

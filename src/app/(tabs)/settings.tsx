@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
@@ -10,6 +11,7 @@ import { AuroraBackground } from '@/components/ui/aurora-background';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TextField } from '@/components/ui/text-field';
+import { PALETTES, type Palette } from '@/constants/palettes';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { authenticate, biometricLabel, checkBiometrics } from '@/lib/auth/biometrics';
@@ -30,6 +32,8 @@ export default function SettingsScreen() {
   const session = useAppStore((s) => s.session);
   const setProfile = useAppStore((s) => s.setProfile);
   const signOut = useAppStore((s) => s.signOut);
+  const palette = useAppStore((s) => s.palette);
+  const setPalette = useAppStore((s) => s.setPalette);
   const [hasKey, setHasKey] = useState(false);
   const [keyInput, setKeyInput] = useState('');
   const [saving, setSaving] = useState(false);
@@ -179,6 +183,24 @@ export default function SettingsScreen() {
           </Card>
         )}
 
+        {/* Appearance */}
+        <Card>
+          <Text style={[styles.title, { color: theme.text }]}>Appearance</Text>
+          <Text style={[styles.desc, { color: theme.textSecondary }]}>
+            Pick a color theme — it recolors your background wallpaper and accents across the app.
+          </Text>
+          <View style={styles.swatchGrid}>
+            {PALETTES.map((p) => (
+              <PaletteSwatch
+                key={p.id}
+                palette={p}
+                active={palette === p.id}
+                onPress={() => setPalette(p.id)}
+              />
+            ))}
+          </View>
+        </Card>
+
         <Pressable onPress={() => router.push('/emergency')}>
           <Card>
             <View style={styles.navRow}>
@@ -295,8 +317,60 @@ export default function SettingsScreen() {
   );
 }
 
+/** A palette preview chip: a mini gradient wallpaper with the theme name. */
+function PaletteSwatch({
+  palette,
+  active,
+  onPress,
+}: {
+  palette: Palette;
+  active: boolean;
+  onPress: () => void;
+}) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={styles.swatchWrap}
+      accessibilityRole="button"
+      accessibilityLabel={`${palette.name} theme`}
+      accessibilityState={{ selected: active }}>
+      <View style={[styles.swatch, { borderColor: active ? theme.text : 'transparent' }]}>
+        <LinearGradient
+          colors={[palette.aurora[0], palette.aurora[1], palette.aurora[2] ?? palette.aurora[0]]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+        {active ? (
+          <View style={styles.swatchCheck}>
+            <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+          </View>
+        ) : null}
+      </View>
+      <Text style={[styles.swatchName, { color: active ? theme.text : theme.textSecondary }]}>
+        {palette.name}
+      </Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   content: { paddingVertical: Spacing.four, gap: Spacing.four },
+  swatchGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.three, marginTop: Spacing.three },
+  swatchWrap: { alignItems: 'center', gap: Spacing.one },
+  swatch: { width: 54, height: 54, borderRadius: 16, overflow: 'hidden', borderWidth: 3 },
+  swatchCheck: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(4, 8, 16, 0.28)',
+  },
+  swatchName: { fontSize: 12, fontWeight: '700' },
   title: { fontSize: 17, fontWeight: '700', marginBottom: Spacing.two },
   desc: { fontSize: 14, lineHeight: 20, marginBottom: Spacing.three },
   status: { fontSize: 14, fontWeight: '600', marginBottom: Spacing.three },

@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { DEFAULT_PALETTE } from '@/constants/palettes';
 import { dateKey } from '@/features/adherence/dates';
 
 import type {
@@ -34,6 +35,10 @@ type AppState = {
   unlocked: boolean;
   /** False until persisted data has been loaded from device storage. */
   hydrated: boolean;
+
+  /** Selected appearance palette id — recolors the accent + aurora wallpaper. */
+  palette: string;
+  setPalette: (id: string) => void;
 
   addMedication: (input: MedicationInput) => Medication;
   updateMedication: (id: string, input: MedicationInput) => void;
@@ -110,6 +115,7 @@ export const useAppStore = create<AppState>()(
       session: null,
       unlocked: false,
       hydrated: false,
+      palette: DEFAULT_PALETTE,
 
       addMedication: (input) => {
         const med: Medication = { ...input, id: newId(), createdAt: new Date().toISOString() };
@@ -217,6 +223,8 @@ export const useAppStore = create<AppState>()(
 
       setSession: (session) => set({ session }),
 
+      setPalette: (palette) => set({ palette }),
+
       setProfile: (name, biometricLock) =>
         set((s) => ({
           profile: {
@@ -258,6 +266,7 @@ export const useAppStore = create<AppState>()(
         dataUpdatedAt: s.dataUpdatedAt,
         profile: s.profile,
         session: s.session,
+        palette: s.palette,
       }),
       onRehydrateStorage: () => () => {
         useAppStore.setState({ hydrated: true });
