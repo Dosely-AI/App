@@ -51,7 +51,7 @@ describe('decideSync', () => {
 
 describe('serializeSynced', () => {
   it('reflects only the synced fields and detects changes', () => {
-    const base = { medications: [], logs: [], symptoms: [], emergency: null };
+    const base = { medications: [], logs: [], symptoms: [], emergency: null, pharmacies: [] };
     const a = serializeSynced(base);
     const b = serializeSynced({ ...base, symptoms: [{ id: '1', date: '2026-01-01', severity: 2, note: 'x', createdAt: 'y' }] });
     expect(a).not.toBe(b);

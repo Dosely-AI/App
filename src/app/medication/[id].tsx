@@ -6,7 +6,9 @@ import { AuroraBackground } from '@/components/ui/aurora-background';
 import { Button } from '@/components/ui/button';
 import { MedicationForm } from '@/features/medications/components/medication-form';
 import { MedicationOverview } from '@/features/medications/components/medication-overview';
+import { PrnCard } from '@/features/medications/components/prn-card';
 import { RefillCard } from '@/features/refill/components/refill-card';
+import { needsRefillAttention, refillStatus } from '@/features/refill/refill';
 import { formToInput } from '@/features/medications/to-input';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -54,7 +56,13 @@ export default function MedicationDetailScreen() {
         showsVerticalScrollIndicator={false}>
         <MedicationOverview name={med.name} rxcui={med.rxcui} />
 
+        {med.asNeeded ? <PrnCard med={med} /> : null}
+
         <RefillCard med={med} />
+
+        {needsRefillAttention(refillStatus(med)) ? (
+          <Button title="Request a refill" onPress={() => router.push('/refills')} />
+        ) : null}
 
         <MedicationForm
           initial={{
@@ -67,6 +75,8 @@ export default function MedicationDetailScreen() {
             pillsPerDose: med.pillsPerDose?.toString() ?? '',
             quantityOnHand: med.quantityOnHand?.toString() ?? '',
             refillLeadDays: med.refillLeadDays?.toString() ?? '',
+            rxNumber: med.rxNumber ?? '',
+            pharmacyId: med.pharmacyId ?? null,
           }}
           submitLabel="Save changes"
           onSubmit={(values) => {

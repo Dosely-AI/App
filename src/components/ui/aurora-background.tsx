@@ -10,6 +10,7 @@ import Animated, {
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { usePalette } from '@/hooks/use-palette';
 
 type Blob = {
   color: string;
@@ -22,10 +23,13 @@ type Blob = {
   duration: number;
 };
 
-const BLOBS: Blob[] = [
-  { color: '#6D8DFF', x: 0.15, y: 0.08, r: 0.55, drift: 18, duration: 9000 },
-  { color: '#8C5BF6', x: 0.9, y: 0.22, r: 0.45, drift: -22, duration: 11000 },
-  { color: '#12B5A5', x: 0.7, y: 0.85, r: 0.5, drift: 16, duration: 13000 },
+/** Blob positions/motion; the colors come from the active palette. */
+const POSITIONS: Omit<Blob, 'color'>[] = [
+  { x: 0.12, y: 0.04, r: 0.58, drift: 22, duration: 9000 },
+  { x: 0.94, y: 0.14, r: 0.44, drift: -26, duration: 11000 },
+  { x: 0.74, y: 0.84, r: 0.5, drift: 18, duration: 13000 },
+  { x: 0.18, y: 0.72, r: 0.42, drift: -18, duration: 10500 },
+  { x: 0.52, y: 0.44, r: 0.36, drift: 15, duration: 15000 },
 ];
 
 /**
@@ -36,13 +40,20 @@ const BLOBS: Blob[] = [
 export function AuroraBackground() {
   const { width, height } = useWindowDimensions();
   const scheme = useColorScheme();
+  const palette = usePalette();
   // Keep it a whisper in light mode; a touch stronger against a black page.
   const opacity = scheme === 'dark' ? 0.5 : 0.32;
 
   return (
     <View style={styles.wrap} pointerEvents="none">
-      {BLOBS.map((blob, i) => (
-        <DriftingBlob key={i} blob={blob} width={width} height={height} opacity={opacity} />
+      {POSITIONS.map((pos, i) => (
+        <DriftingBlob
+          key={i}
+          blob={{ ...pos, color: palette.aurora[i % palette.aurora.length] }}
+          width={width}
+          height={height}
+          opacity={opacity}
+        />
       ))}
     </View>
   );
@@ -72,9 +83,16 @@ function DriftingBlob({
     );
   }, [blob.drift, blob.duration, offset]);
 
-  const style = useAnimatedStyle(() => ({
-    transform: [{ translateY: offset.value }, { translateX: offset.value * 0.6 }],
-  }));
+  const style = useAnimatedStyle(() => {
+    const breath = 1 + Math.abs(offset.value / blob.drift) * 0.1;
+    return {
+      transform: [
+        { translateY: offset.value },
+        { translateX: offset.value * 0.6 },
+        { scale: breath },
+      ],
+    };
+  });
 
   const size = Math.max(width, height) * blob.r * 2;
   const id = `grad-${blob.color.replace('#', '')}`;

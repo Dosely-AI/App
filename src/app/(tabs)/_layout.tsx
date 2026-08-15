@@ -1,10 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import { Platform } from 'react-native';
 
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function TabsLayout() {
   const theme = useTheme();
+  const dark = useColorScheme() === 'dark';
 
   return (
     <Tabs
@@ -16,11 +19,17 @@ export default function TabsLayout() {
         headerTitleStyle: { color: theme.text, fontWeight: '800', fontSize: 20 },
         headerShadowVisible: false,
         tabBarStyle: {
-          backgroundColor: theme.backgroundElement,
-          borderTopColor: theme.border,
-          height: 64,
-          paddingTop: 6,
+          // Frosted glass with a mint-lit top edge.
+          backgroundColor: dark ? 'rgba(10, 22, 38, 0.82)' : 'rgba(255, 255, 255, 0.85)',
+          borderTopColor: dark ? 'rgba(132, 240, 208, 0.16)' : theme.border,
+          borderTopWidth: 1,
+          height: 66,
+          paddingTop: 7,
           paddingBottom: 8,
+          elevation: 0,
+          ...(Platform.OS === 'web'
+            ? ({ backdropFilter: 'blur(18px) saturate(1.4)', WebkitBackdropFilter: 'blur(18px) saturate(1.4)' } as object)
+            : null),
         },
         tabBarLabelStyle: { fontSize: 12, fontWeight: '700' },
         sceneStyle: { backgroundColor: theme.background },

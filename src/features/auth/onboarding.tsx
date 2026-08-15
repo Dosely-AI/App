@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { DoselyLogo } from '@/components/logo';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
@@ -59,9 +59,7 @@ export function Onboarding() {
     <Screen>
       <View style={styles.content}>
         <Animated.View entering={FadeInDown.duration(550)} style={styles.hero}>
-          <View style={[styles.logo, { backgroundColor: theme.tint }]}>
-            <Ionicons name="medkit" size={34} color={theme.onTint} />
-          </View>
+          <DoselyLogo size={72} />
           <Text style={[styles.title, { color: theme.text }]}>Welcome to DoselyAI</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             Let&apos;s set up your profile. Everything stays on this device — no account, no password.

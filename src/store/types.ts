@@ -35,6 +35,14 @@ export type Medication = {
   daysOfWeek: number[];
   createdAt: string; // ISO
 
+  // --- As-needed (PRN) dosing. When true, the medication has no fixed schedule
+  // (`times` is empty), so it never counts toward adherence or reminders; the
+  // user logs each dose when they take it. ---
+  /** Taken as needed rather than on a schedule. */
+  asNeeded?: boolean;
+  /** Suggested safe maximum doses per day (from labeling / a pharmacist). Null = no cap set. */
+  maxPerDay?: number | null;
+
   // --- Refill tracking (all optional so medications saved before this feature
   // still load cleanly; null/undefined = refill prediction is off). ---
   /** Units taken per scheduled dose slot (e.g. 2 tablets at a time). Null = 1. */
@@ -45,6 +53,30 @@ export type Medication = {
   quantityAsOf?: string | null;
   /** Warn this many days before the projected run-out date. Null = 7. */
   refillLeadDays?: number | null;
+
+  // --- Pharmacy (optional; enables one-tap refill requests). ---
+  /** Which saved pharmacy fills this prescription (id into `pharmacies`). Null = none set. */
+  pharmacyId?: string | null;
+  /** The prescription (Rx) number the pharmacy uses to identify this fill. Null = unknown. */
+  rxNumber?: string | null;
+};
+
+/**
+ * A pharmacy the user fills prescriptions at. Kept on-device with everything
+ * else; medications reference one by `pharmacyId`, so when a refill is due the
+ * user can place the request by phone or text. Nothing is sent anywhere until
+ * the user taps Call / Text / Share.
+ */
+export type Pharmacy = {
+  id: string;
+  name: string;
+  /** Free-form phone number; used to build tel: / sms: links. */
+  phone: string;
+  /** Optional street address, for the user's own reference. */
+  address: string;
+  /** Optional notes (which location, hours, etc.). */
+  notes: string;
+  createdAt: string; // ISO
 };
 
 /** A single dose the user marked as taken, tied to a scheduled slot. */

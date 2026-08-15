@@ -9,33 +9,34 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    // Softly tinted rather than pure white, so cards read as raised surfaces.
-    background: '#F4F6FB',
+    text: '#0A1626',
+    // Mint-tinted "paper", so cards read as raised surfaces.
+    background: '#EAF3F1',
     backgroundElement: '#FFFFFF',
-    backgroundSelected: '#E4E8F2',
-    textSecondary: '#60646C',
-    /** Brand / primary accent (matches the splash blue). */
-    tint: '#1573E6',
-    onTint: '#ffffff',
-    border: '#E2E3E8',
-    success: '#1F9D55',
+    backgroundSelected: '#D6E8E2',
+    textSecondary: '#4C5F68',
+    /** Brand / primary accent — Dosely mint, deepened for contrast on light. */
+    tint: '#0AA47C',
+    onTint: '#FFFFFF',
+    border: '#CFE0DA',
+    success: '#0FA576',
     warning: '#B7791F',
     danger: '#D7373F',
   },
   dark: {
-    text: '#ECEDEE',
-    // Deep blue-charcoal rather than pure black — gives the color washes and
-    // card shadows something to sit against instead of a flat void.
-    background: '#0B1020',
-    backgroundElement: '#161D33',
-    backgroundSelected: '#222B45',
-    textSecondary: '#B0B4BA',
-    tint: '#5EA9FF',
-    onTint: '#06121F',
-    border: '#2A2C30',
-    success: '#3FBF77',
-    warning: '#E0A100',
+    text: '#EAF3F1',
+    // Deep navy "ink" ground.
+    background: '#0A1626',
+    // Raised "panel" surface, a step up from the ink ground.
+    backgroundElement: '#10233B',
+    backgroundSelected: '#183250',
+    textSecondary: '#8CA0AE',
+    /** Brand / primary accent — Dosely mint. */
+    tint: '#34EBB4',
+    onTint: '#0A1626',
+    border: '#20374F',
+    success: '#2FD9A0',
+    warning: '#F2B84B',
     danger: '#FF6B6B',
   },
 } as const;
@@ -86,12 +87,12 @@ export const MaxContentWidth = 800;
  * gradients; `solid` is for text, icons, and bars.
  */
 export const Accents = [
-  { solid: '#5B7CFA', from: '#7B97FF', to: '#4356DC' }, // indigo
-  { solid: '#12B5A5', from: '#33D6C3', to: '#0B9184' }, // teal
-  { solid: '#F0883E', from: '#FFAA61', to: '#DD6B1B' }, // amber
-  { solid: '#E75A8A', from: '#FF83AC', to: '#CF3E70' }, // rose
-  { solid: '#8C5BF6', from: '#AA85FF', to: '#7038DF' }, // violet
-  { solid: '#2FA45A', from: '#4FC97C', to: '#1C8546' }, // green
+  { solid: '#34EBB4', from: '#5FF2C8', to: '#17C79A' }, // mint (brand)
+  { solid: '#2CC7D4', from: '#54DBE6', to: '#159FB0' }, // aqua
+  { solid: '#5B9DFF', from: '#7FB4FF', to: '#3D7FE6' }, // sky
+  { solid: '#9B8CFF', from: '#B7ACFF', to: '#7A67F0' }, // violet
+  { solid: '#F5B24C', from: '#FFC96B', to: '#E0912A' }, // amber
+  { solid: '#F27897', from: '#FF9BB2', to: '#D9587A' }, // rose
 ] as const;
 
 export type Accent = (typeof Accents)[number];
@@ -103,8 +104,9 @@ export function accentFor(seed: string): Accent {
   return Accents[Math.abs(hash) % Accents.length];
 }
 
-/** Hero gradients for the headline card on Today, per color scheme. */
+/** Hero gradients for the headline card on Today, per color scheme. A rich
+ * teal→emerald→mint sweep — brand mint, but deep enough for white text. */
 export const HeroGradient = {
-  light: ['#6D8DFF', '#5B4BE0', '#8B4DD8'] as const,
-  dark: ['#3B5BD9', '#4634B0', '#6B2FA8'] as const,
+  light: ['#0E3B44', '#115E52', '#1A9A7B'] as const,
+  dark: ['#0E3B44', '#115E52', '#1A9A7B'] as const,
 };
