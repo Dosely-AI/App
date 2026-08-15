@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useEffect, useMemo } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Extrapolation,
   FadeIn,
@@ -31,6 +32,7 @@ import { formatTime12 } from '@/features/medications/schedule';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAppStore } from '@/store/app-store';
+import { QuickDoseButton } from '@/features/doses/quick-dose-button';
 
 type DoseItem = { medId: string; name: string; time: string; taken: boolean };
 
@@ -53,6 +55,7 @@ function greeting(): string {
 
 export default function TodayScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const scheme = useColorScheme();
   const { width: winWidth, height: winHeight } = useWindowDimensions();
   const medications = useAppStore((s) => s.medications);
@@ -171,22 +174,10 @@ export default function TodayScreen() {
               </Animated.View>
             </Animated.View>
 
-            {/* Up next callout */}
-            {nextDose ? (
-              <Animated.View entering={FadeInDown.duration(420).delay(120)}>
-                <Card style={styles.nextCard}>
-                  <View style={[styles.nextIcon, { backgroundColor: accentFor(nextDose.medId).solid }]}>
-                    <Ionicons name="alarm" size={18} color="#FFFFFF" />
-                  </View>
-                  <View style={styles.flex}>
-                    <Text style={[styles.nextLabel, { color: theme.textSecondary }]}>Up next</Text>
-                    <Text style={[styles.nextName, { color: theme.text }]}>
-                      {nextDose.name} · {formatTime12(nextDose.time)}
-                    </Text>
-                  </View>
-                </Card>
-              </Animated.View>
-            ) : null}
+            {/* Big quick-log action */}
+            <Animated.View entering={FadeInDown.duration(420).delay(120)}>
+              <QuickDoseButton />
+            </Animated.View>
 
             {/* Section header */}
             <Animated.View entering={FadeIn.duration(400).delay(180)} style={styles.sectionHead}>
@@ -210,6 +201,22 @@ export default function TodayScreen() {
                 }
               />
             ))}
+
+            {/* Dose timing entry */}
+            <Animated.View entering={FadeIn.duration(400).delay(260)}>
+              <Pressable onPress={() => router.push('/timing')}>
+                <Card style={styles.timingCard}>
+                  <Ionicons name="time-outline" size={22} color={theme.tint} />
+                  <View style={styles.flex}>
+                    <Text style={[styles.timingTitle, { color: theme.text }]}>Dose timing &amp; delays</Text>
+                    <Text style={[styles.timingSub, { color: theme.textSecondary }]}>
+                      How promptly you take your doses over time
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+                </Card>
+              </Pressable>
+            </Animated.View>
           </>
         )}
 
@@ -331,6 +338,11 @@ const styles = StyleSheet.create({
   nextIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   nextLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' },
   nextName: { fontSize: 16, fontWeight: '700', marginTop: 1 },
+
+  // Timing entry
+  timingCard: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  timingTitle: { fontSize: 16, fontWeight: '700' },
+  timingSub: { fontSize: 13, marginTop: 1 },
 
   // Section header
   sectionHead: {
