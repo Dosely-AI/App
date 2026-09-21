@@ -2,12 +2,13 @@
   "name": "dosely-server",
   "version": "0.1.0",
   "private": true,
-  "description": "WebAuthn / passkey authentication backend for DoselyAI",
+  "description": "Dosely API: passkey auth, sync, AI chat, and the care network (backed by the native vault)",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"test/*.test.ts\""
   },
   "dependencies": {
     "@simplewebauthn/server": "^13.1.1",

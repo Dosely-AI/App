@@ -252,6 +252,23 @@ export default function SettingsScreen() {
           </Card>
         </Pressable>
 
+        <Pressable onPress={() => router.push('/network')}>
+          <Card>
+            <View style={styles.navRow}>
+              <View style={[styles.navIcon, { backgroundColor: theme.success }]}>
+                <Ionicons name="git-network" size={20} color="#FFFFFF" />
+              </View>
+              <View style={styles.flex}>
+                <Text style={[styles.title, { color: theme.text, marginBottom: 2 }]}>Pharmacy & doctor network</Text>
+                <Text style={[styles.desc, { color: theme.textSecondary, marginBottom: 0 }]}>
+                  Connect your pharmacy and doctors, follow prescriptions, and control who sees what.
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </View>
+          </Card>
+        </Pressable>
+
         <Card>
           <Text style={[styles.title, { color: theme.text }]}>Dose reminders</Text>
           <Text style={[styles.desc, { color: theme.textSecondary }]}>

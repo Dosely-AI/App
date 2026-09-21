@@ -1,0 +1,371 @@
+# Dosely Vault protocol — the single source of truth.
+#
+# Every consumer is GENERATED from this file, so they can never drift:
+#   C++ vault:   native/vault/src/core/protocol.gen.hpp
+#   API server:  server/src/vault/protocol.gen.ts   (wire schemas)
+#   App:         src/lib/care/protocol.gen.ts       (JSON shapes)
+# After editing, run:  node native/vault/build.mjs gen   (CI: gen --check)
+#
+# Format:  <kind> <Group> <NAME> <value> [<type>]
+#   enum   -> a closed set of values (C++ enum class, TS const object)
+#   flags  -> bit flags (C++ constexpr uint32_t, TS const object)
+#   const  -> numeric constants
+#   field  -> a TLV field tag within a message group, with its wire type:
+#             u64 | i64 | bool | str | bytes | <Group> | <Group>[] | msg | msg[]
+#             (<Group> = a nested message of that group, [] = repeated,
+#              msg = a nested message whose shape depends on the command)
+# Values never change once shipped; add new ones instead (wire compatibility).
+
+# --- Actors and consent ------------------------------------------------------
+enum   Role         PATIENT             1
+enum   Role         PHARMACY            2
+enum   Role         PRESCRIBER          3
+enum   Role         SYSTEM              4
+
+flags  Scope        READ_MEDS           1
+flags  Scope        READ_ADHERENCE      2
+flags  Scope        READ_TIMING         4
+flags  Scope        READ_REFILL         8
+flags  Scope        RECEIVE_RX          16
+flags  Scope        PRESCRIBE           32
+
+# Purpose of use, recorded in the audit log (HIPAA "treatment, payment, operations").
+enum   Purpose      TREATMENT           1
+enum   Purpose      PAYMENT             2
+enum   Purpose      OPERATIONS          3
+enum   Purpose      PATIENT_REQUEST     4
+
+# --- Prescriptions -------------------------------------------------------------
+enum   RxStatus     SENT                1
+enum   RxStatus     RECEIVED            2
+enum   RxStatus     IN_PROGRESS         3
+enum   RxStatus     READY               4
+enum   RxStatus     PICKED_UP           5
+enum   RxStatus     CANCELLED           6
+
+# --- Analytics -----------------------------------------------------------------
+enum   RefillLevel  UNTRACKED           0
+enum   RefillLevel  UNKNOWN             1
+enum   RefillLevel  OK                  2
+enum   RefillLevel  SOON                3
+enum   RefillLevel  OUT                 4
+
+flags  RiskReason   REFILL_OVERDUE      1
+flags  RiskReason   REFILL_SOON         2
+flags  RiskReason   LOW_PDC             4
+flags  RiskReason   LATE_DOSES          8
+flags  RiskReason   MISSED_DOSES        16
+
+enum   WorkKind     REFILL_OVERDUE      1
+enum   WorkKind     NEW_RX              2
+enum   WorkKind     REFILL_DUE          3
+enum   WorkKind     HIGH_RISK           4
+enum   WorkKind     LOW_PDC             5
+enum   WorkKind     MED_SYNC            6
+
+# --- Commands ----------------------------------------------------------------------
+enum   Cmd          HELLO               1
+enum   Cmd          STATS               2
+enum   Cmd          PROVIDER_REGISTER   10
+enum   Cmd          PROVIDER_GET        11
+enum   Cmd          INVITE_CREATE       20
+enum   Cmd          INVITE_REDEEM       21
+enum   Cmd          GRANT_LIST          22
+enum   Cmd          GRANT_REVOKE        23
+enum   Cmd          SNAPSHOT_PUT        30
+enum   Cmd          PATIENT_SUMMARY     31
+enum   Cmd          PATIENT_ERASE       32
+enum   Cmd          PROVIDER_PATIENTS   33
+enum   Cmd          RX_CREATE           40
+enum   Cmd          RX_LIST             41
+enum   Cmd          RX_GET              42
+enum   Cmd          RX_SET_STATUS       43
+enum   Cmd          WORKLIST            50
+enum   Cmd          AUDIT_QUERY         60
+enum   Cmd          AUDIT_VERIFY        61
+
+enum   Err          OK                  0
+enum   Err          BAD_REQUEST         1
+enum   Err          UNAUTHORIZED        2
+enum   Err          FORBIDDEN           3
+enum   Err          NOT_FOUND           4
+enum   Err          CONFLICT            5
+enum   Err          EXPIRED             6
+enum   Err          STEP_UP_REQUIRED    7
+enum   Err          INTEGRITY           8
+enum   Err          INTERNAL            9
+enum   Err          UNSUPPORTED         10
+enum   Err          LIMIT               11
+enum   Err          UNVERIFIED          12
+
+# --- Wire format -------------------------------------------------------------------
+enum   FieldType    U64                 1
+enum   FieldType    I64                 2
+enum   FieldType    BOOL                3
+enum   FieldType    BYTES               4
+enum   FieldType    STR                 5
+enum   FieldType    MSG                 6
+
+const  Frame        VERSION             1
+const  Frame        KIND_REQUEST        1
+const  Frame        KIND_RESPONSE       2
+const  Frame        HEADER_SIZE         28
+const  Frame        MAC_SIZE            32
+const  Frame        MAX_PAYLOAD         1048576
+const  Frame        MAX_CLOCK_SKEW_MS   300000
+
+const  Codec        MAX_DEPTH           8
+const  Codec        MAX_FIELDS          65536
+const  Codec        MAX_STRING          65536
+const  Codec        MAX_BYTES           65536
+
+# On-disk record types.
+enum   RecordType   PATIENT_KEY         1
+enum   RecordType   SNAPSHOT            2
+enum   RecordType   PROVIDER            3
+enum   RecordType   PROVIDER_KEY        4
+enum   RecordType   GRANT               5
+enum   RecordType   RX_BODY             6
+enum   RecordType   RX_META             7
+enum   RecordType   INVITE_SPENT        8
+enum   RecordType   FILL                9
+enum   RecordType   TOMBSTONE           10
+
+# --- Message field tags ------------------------------------------------------------
+field  Req          RequestId           1    u64
+field  Req          Command             2    u64
+field  Req          Actor               3    Actor
+field  Req          Args                4    Arg
+field  Req          Context             5    Ctx
+
+field  Resp         RequestId           1    u64
+field  Resp         Status              2    u64
+field  Resp         Result              3    msg
+field  Resp         Error               4    str
+
+field  Actor        Id                  1    str
+field  Actor        Role                2    u64
+
+field  Ctx          Purpose             1    u64
+field  Ctx          StepUpAtMs          2    u64
+
+field  Arg          PatientId           1    str
+field  Arg          ProviderId          2    str
+field  Arg          GrantId             3    str
+field  Arg          RxId                4    str
+field  Arg          Status              5    u64
+field  Arg          Limit               6    u64
+field  Arg          Token               7    bytes
+field  Arg          Role                8    u64
+field  Arg          Scopes              9    u64
+field  Arg          GrantDays           10   u64
+field  Arg          Day                 11   u64
+field  Arg          Record              12   msg
+field  Arg          ExpiresInMs         13   u64
+
+field  List         Item                1    msg[]
+
+field  Hello        Version             1    u64
+field  Hello        SystemKey           2    bytes
+
+field  Provider     Id                  1    str
+field  Provider     Role                2    u64
+field  Provider     Name                3    str
+field  Provider     Org                 4    str
+field  Provider     Npi                 5    str
+field  Provider     Verified            6    bool
+field  Provider     PublicKey           7    bytes
+field  Provider     CreatedAtMs         8    u64
+
+field  Grant        Id                  1    str
+field  Grant        PatientId           2    str
+field  Grant        ProviderId          3    str
+field  Grant        Scopes              4    u64
+field  Grant        CreatedAtMs         5    u64
+field  Grant        ExpiresAtMs         6    u64
+field  Grant        Revoked             7    bool
+field  Grant        ProviderName        8    str
+field  Grant        ProviderRole        9    u64
+field  Grant        ProviderVerified    10   bool
+field  Grant        ProviderOrg         11   str
+field  Grant        PatientName         12   str
+
+field  Invite       PatientId           1    str
+field  Invite       Role                2    u64
+field  Invite       Scopes              3    u64
+field  Invite       ExpiresAtMs         4    u64
+field  Invite       Nonce               5    bytes
+field  Invite       GrantDays           6    u64
+field  Invite       Token               7    bytes
+
+# A signed capability: Body is an encoded Invite, Signature is Ed25519 over it.
+field  Token        Body                1    bytes
+field  Token        Signature           2    bytes
+
+field  Snapshot     PatientId           1    str
+field  Snapshot     DisplayName         2    str
+field  Snapshot     Med                 3    Med[]
+field  Snapshot     UpdatedAtMs         4    u64
+# Minutes east of UTC on the patient's device, so "today" means their today.
+field  Snapshot     TzOffsetMin         5    i64
+
+field  Med          Id                  1    str
+field  Med          Name                2    str
+field  Med          Rxcui               3    str
+field  Med          Strength            4    str
+field  Med          Form                5    str
+field  Med          SlotsPerDay         6    u64
+field  Med          DaysMask            7    u64
+field  Med          UnitsPerDoseMilli   8    u64
+field  Med          OnHandMilli         9    u64
+field  Med          AsOfDay             10   u64
+field  Med          LeadDays            11   u64
+field  Med          AsNeeded            12   bool
+field  Med          SelfAdherencePct    13   u64
+field  Med          DosesDue            14   u64
+field  Med          DosesTaken          15   u64
+field  Med          DosesLate           16   u64
+field  Med          AvgDelayMin         17   i64
+field  Med          SupplyTracked       18   bool
+field  Med          RxId                19   str
+
+field  Fill         Id                  1    str
+field  Fill         PatientId           2    str
+field  Fill         MedId               3    str
+field  Fill         RxId                4    str
+field  Fill         Day                 5    u64
+field  Fill         QuantityMilli       6    u64
+field  Fill         DaysSupply          7    u64
+field  Fill         PharmacyId          8    str
+
+field  Rx           Id                  1    str
+field  Rx           PatientId           2    str
+field  Rx           PrescriberId        3    str
+field  Rx           PharmacyId          4    str
+field  Rx           MedId               5    str
+field  Rx           DrugName            6    str
+field  Rx           Rxcui               7    str
+field  Rx           Strength            8    str
+field  Rx           Form                9    str
+field  Rx           Sig                 10   str
+field  Rx           QuantityMilli       11   u64
+field  Rx           DaysSupply          12   u64
+field  Rx           Refills             13   u64
+field  Rx           Controlled          14   bool
+field  Rx           IssuedAtMs          15   u64
+field  Rx           Status              16   u64
+field  Rx           UpdatedAtMs         17   u64
+field  Rx           Signature           18   bytes
+field  Rx           PrescriberKey       19   bytes
+field  Rx           SignatureValid      20   bool
+field  Rx           PrescriberName      21   str
+field  Rx           PatientName         22   str
+field  Rx           PharmacyName        23   str
+field  Rx           History             24   StatusEvent[]
+field  Rx           RefillsUsed         25   u64
+
+field  StatusEvent  Status              1    u64
+field  StatusEvent  AtMs                2    u64
+field  StatusEvent  ActorId             3    str
+
+field  RxMeta       Id                  1    str
+field  RxMeta       PatientId           2    str
+field  RxMeta       PrescriberId        3    str
+field  RxMeta       PharmacyId          4    str
+field  RxMeta       Status              5    u64
+field  RxMeta       IssuedAtMs          6    u64
+field  RxMeta       UpdatedAtMs         7    u64
+field  RxMeta       History             8    StatusEvent[]
+
+field  Summary      PatientId           1    str
+field  Summary      DisplayName         2    str
+field  Summary      Med                 3    MedSummary[]
+field  Summary      RiskScore           4    u64
+field  Summary      RiskReasons         5    u64
+field  Summary      Sync                6    SyncPlan
+field  Summary      Pharmacy            7    PharmacyRef[]
+field  Summary      UpdatedAtMs         8    u64
+field  Summary      Scopes              9    u64
+
+field  MedSummary   MedId               1    str
+field  MedSummary   Name                2    str
+field  MedSummary   Strength            3    str
+field  MedSummary   Form                4    str
+field  MedSummary   Level               5    u64
+field  MedSummary   DaysLeft            6    u64
+field  MedSummary   RunOutDay           7    u64
+field  MedSummary   RefillByDay         8    u64
+field  MedSummary   PdcPermille         9    u64
+field  MedSummary   PdcValid            10   bool
+field  MedSummary   RiskScore           11   u64
+field  MedSummary   RiskReasons         12   u64
+field  MedSummary   SelfAdherencePct    13   u64
+field  MedSummary   DosesDue            14   u64
+field  MedSummary   DosesTaken          15   u64
+field  MedSummary   DosesLate           16   u64
+field  MedSummary   AvgDelayMin         17   i64
+field  MedSummary   AsNeeded            18   bool
+field  MedSummary   FillCount           19   u64
+field  MedSummary   RemainingMilli      20   u64
+field  MedSummary   DailyMilli          21   u64
+
+field  SyncPlan     SyncDay             1    u64
+field  SyncPlan     ShortFill           2    ShortFill[]
+
+field  ShortFill    MedId               1    str
+field  ShortFill    Name                2    str
+field  ShortFill    Days                3    u64
+field  ShortFill    UnitsMilli          4    u64
+
+field  PharmacyRef  Id                  1    str
+field  PharmacyRef  Name                2    str
+field  PharmacyRef  Org                 3    str
+field  PharmacyRef  Verified            4    bool
+
+field  PatientRef   Id                  1    str
+field  PatientRef   DisplayName         2    str
+field  PatientRef   Scopes              3    u64
+field  PatientRef   GrantExpiresAtMs    4    u64
+field  PatientRef   RiskScore           5    u64
+field  PatientRef   UpdatedAtMs         6    u64
+
+field  Work         Kind                1    u64
+field  Work         PatientId           2    str
+field  Work         PatientName         3    str
+field  Work         MedId               4    str
+field  Work         MedName             5    str
+field  Work         DueDay              6    u64
+field  Work         Priority            7    u64
+field  Work         Detail              8    str
+field  Work         RxId                9    str
+
+field  Audit        Seq                 1    u64
+field  Audit        AtMs                2    u64
+field  Audit        ActorId             3    str
+field  Audit        ActorRole           4    u64
+field  Audit        Command             5    u64
+field  Audit        PatientId           6    str
+field  Audit        Purpose             7    u64
+field  Audit        Outcome             8    u64
+field  Audit        Detail              9    str
+field  Audit        ActorName           10   str
+
+field  Stats        Version             1    u64
+field  Stats        Providers           2    u64
+field  Stats        Patients            3    u64
+field  Stats        Grants              4    u64
+field  Stats        Prescriptions       5    u64
+field  Stats        AuditEntries        6    u64
+field  Stats        IntegrityErrors     7    u64
+field  Stats        AuditIntact         8    bool
+field  Stats        AuditBrokenAt       9    u64
+
+# On-disk envelopes (the store's own framing).
+field  Rec          Type                1    u64
+field  Rec          Id                  2    str
+field  Rec          Version             3    u64
+field  Rec          Sealed              4    bytes
+
+field  AuditRec     Seq                 1    u64
+field  AuditRec     Sealed              2    bytes
+field  AuditRec     Chain               3    bytes

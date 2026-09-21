@@ -40,6 +40,14 @@ type AppState = {
   palette: string;
   setPalette: (id: string) => void;
 
+  /**
+   * Care network: keep the encrypted snapshot shared with connected providers
+   * up to date automatically. Turned on by the first connection the patient
+   * makes; turned off when they erase their shared data.
+   */
+  careSharing: boolean;
+  setCareSharing: (on: boolean) => void;
+
   addMedication: (input: MedicationInput) => Medication;
   updateMedication: (id: string, input: MedicationInput) => void;
   removeMedication: (id: string) => void;
@@ -116,6 +124,8 @@ export const useAppStore = create<AppState>()(
       unlocked: false,
       hydrated: false,
       palette: DEFAULT_PALETTE,
+      careSharing: false,
+      setCareSharing: (careSharing) => set({ careSharing }),
 
       addMedication: (input) => {
         const med: Medication = { ...input, id: newId(), createdAt: new Date().toISOString() };
@@ -250,6 +260,7 @@ export const useAppStore = create<AppState>()(
           profile: null,
           session: null,
           unlocked: false,
+          careSharing: false,
         }),
     }),
     {
@@ -267,6 +278,7 @@ export const useAppStore = create<AppState>()(
         profile: s.profile,
         session: s.session,
         palette: s.palette,
+        careSharing: s.careSharing,
       }),
       onRehydrateStorage: () => () => {
         useAppStore.setState({ hydrated: true });

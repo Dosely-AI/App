@@ -1,0 +1,15 @@
+{
+  "name": "dosely-vault",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The Dosely care-network vault (C++20), built to WebAssembly and run inside Node",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node build.mjs test",
+    "gen": "node build.mjs gen"
+  },
+  "devDependencies": {
+    "@yowasp/clang": "22.0.0-git20542-10"
+  }
+}

@@ -43,3 +43,10 @@ example
 # generated native folders
 /ios
 /android
+
+# Care network vault: build outputs and local (encrypted) data + keys
+native/vault/build/
+server/.data/
+
+# npm run dev: logs and state of the background dev servers
+.dosely-dev/

@@ -15,6 +15,10 @@ export type ScanParams = {
   times?: string;
   confidence?: string;
   source?: string;
+  /** Set when starting a medication from a care-network prescription. */
+  careRxId?: string;
+  /** The prescription's directions, shown as a hint for choosing dose times. */
+  sig?: string;
 };
 
 /**

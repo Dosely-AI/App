@@ -4,7 +4,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Card } from '@/components/ui/card';
 import { Spacing, accentFor } from '@/constants/theme';
-import { prnStatus, timeSince } from '@/features/medications/prn';
+import { prnStatus, timeSince } from '@/features/medications/as-needed';
 import { useTheme } from '@/hooks/use-theme';
 import { useAppStore } from '@/store/app-store';
 import type { Medication } from '@/store/types';

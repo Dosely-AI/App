@@ -21,6 +21,8 @@ export default function NewMedicationScreen() {
 
   const initial = prefillFrom(params);
   const scanned = params.source === 'barcode' || params.source === 'photo';
+  const fromRx = params.source === 'rx';
+  const careRxId = fromRx && /^[A-Za-z0-9_-]{1,64}$/.test(params.careRxId ?? '') ? params.careRxId : undefined;
   const lowConfidence = params.confidence === 'low';
 
   return (
@@ -54,11 +56,26 @@ export default function NewMedicationScreen() {
           </Animated.View>
         ) : null}
 
+        {fromRx ? (
+          <Animated.View entering={FadeInDown.duration(380)}>
+            <Card style={styles.banner}>
+              <Ionicons name="document-text" size={22} color={theme.tint} />
+              <View style={styles.flex}>
+                <Text style={[styles.bannerTitle, { color: theme.text }]}>From your prescription</Text>
+                <Text style={[styles.bannerBody, { color: theme.textSecondary }]}>
+                  {params.sig ? `Directions: ${params.sig.slice(0, 200)}. ` : ''}Add the dose times that match these
+                  directions.
+                </Text>
+              </View>
+            </Card>
+          </Animated.View>
+        ) : null}
+
         <MedicationForm
           initial={initial}
           submitLabel="Add medication"
           onSubmit={(values) => {
-            addMedication(formToInput(values));
+            addMedication({ ...formToInput(values), careRxId: careRxId ?? null });
             router.back();
           }}
         />

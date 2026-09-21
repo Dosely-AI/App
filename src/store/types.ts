@@ -59,6 +59,14 @@ export type Medication = {
   pharmacyId?: string | null;
   /** The prescription (Rx) number the pharmacy uses to identify this fill. Null = unknown. */
   rxNumber?: string | null;
+
+  // --- Care network (optional). ---
+  /** The care-network prescription this medication was started from, so the
+   * pharmacy's fills count toward its refill-adherence (PDC). */
+  careRxId?: string | null;
+  /** When the last pharmacy pickup was added to `quantityOnHand` (ms), so a
+   * pickup is never counted twice. */
+  careFillAt?: number | null;
 };
 
 /**

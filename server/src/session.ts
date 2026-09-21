@@ -17,14 +17,23 @@ function sign(payload: string): string {
   return b64url(createHmac('sha256', config.sessionSecret).update(payload).digest());
 }
 
-export function issueSession(userId: string): string {
-  const exp = Math.floor(Date.now() / 1000) + config.sessionTtlSec;
+export function issueSession(userId: string, nowMs: number = Date.now()): string {
+  const exp = Math.floor(nowMs / 1000) + config.sessionTtlSec;
   const payload = `${userId}.${exp}`;
   return `${b64url(Buffer.from(payload))}.${sign(payload)}`;
 }
 
 /** Verify a token and return the userId, or null if invalid/expired/tampered. */
 export function verifySession(token: string | undefined): string | null {
+  return sessionClaims(token)?.userId ?? null;
+}
+
+/**
+ * Verify a token and also return when it was issued — i.e. when the user last
+ * completed a passkey ceremony. High-risk actions use this as "step-up":
+ * they require a sign-in within the last few minutes.
+ */
+export function sessionClaims(token: string | undefined): { userId: string; issuedAtMs: number } | null {
   if (!token) return null;
   const [payloadB64, sig] = token.split('.');
   if (!payloadB64 || !sig) return null;
@@ -39,7 +48,8 @@ export function verifySession(token: string | undefined): string | null {
 
   const [userId, expStr] = payload.split('.');
   if (!userId || !expStr) return null;
-  if (Number(expStr) < Math.floor(Date.now() / 1000)) return null;
+  const exp = Number(expStr);
+  if (!Number.isSafeInteger(exp) || exp < Math.floor(Date.now() / 1000)) return null;
 
-  return userId;
+  return { userId, issuedAtMs: (exp - config.sessionTtlSec) * 1000 };
 }

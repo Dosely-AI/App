@@ -1,6 +1,6 @@
 import type { DoseLog, Medication } from '@/store/types';
 
-import { isAsNeeded, prnLogsToday, prnStatus, timeSince } from '../prn';
+import { isAsNeeded, prnLogsToday, prnStatus, timeSince } from '../as-needed';
 
 const TODAY = '2026-07-23';
 

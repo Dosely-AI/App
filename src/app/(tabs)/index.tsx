@@ -27,7 +27,7 @@ import { Spacing, accentFor } from '@/constants/theme';
 import { currentStreak, expectedSlots, missedDoses } from '@/features/adherence/adherence';
 import { dateKey, lastNDays } from '@/features/adherence/dates';
 import { PrnCard } from '@/features/medications/components/prn-card';
-import { isAsNeeded } from '@/features/medications/prn';
+import { isAsNeeded } from '@/features/medications/as-needed';
 import { formatTime12 } from '@/features/medications/schedule';
 import { needsRefillAttention, refillStatus } from '@/features/refill/refill';
 import { usePalette } from '@/hooks/use-palette';

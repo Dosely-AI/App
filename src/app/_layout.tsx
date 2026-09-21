@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthGate } from '@/features/auth/auth-gate';
+import { useCareAutoShare } from '@/features/care/use-care';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReminders } from '@/hooks/use-reminders';
 import { useTheme } from '@/hooks/use-theme';
@@ -18,6 +19,7 @@ export default function RootLayout() {
   const theme = useTheme();
   useReminders();
   useSync();
+  useCareAutoShare();
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -45,6 +47,14 @@ export default function RootLayout() {
               <Stack.Screen name="sharing" options={{ title: 'Caregivers & sharing' }} />
               <Stack.Screen name="care/[id]" options={{ title: 'Patient' }} />
               <Stack.Screen name="timing" options={{ title: 'Dose timing' }} />
+              <Stack.Screen name="network/index" options={{ title: 'Care network' }} />
+              <Stack.Screen name="network/connect" options={{ title: 'Connect a provider' }} />
+              <Stack.Screen name="network/activity" options={{ title: 'Who viewed my record' }} />
+              <Stack.Screen name="network/rx/[id]" options={{ title: 'Prescription' }} />
+              <Stack.Screen name="network/provider/index" options={{ title: 'Provider portal' }} />
+              <Stack.Screen name="network/provider/scan" options={{ title: 'Scan patient code' }} />
+              <Stack.Screen name="network/provider/patient/[id]" options={{ title: 'Patient' }} />
+              <Stack.Screen name="network/provider/prescribe" options={{ title: 'New prescription' }} />
             </Stack>
           </AuthGate>
           <StatusBar style="auto" />

@@ -24,9 +24,15 @@ Everything stays **on your device**. There is no account and nothing is uploaded
 ## Run it
 
 ```bash
-npm install
-npx expo start        # then scan the QR code with the Expo Go app on your phone
+npm run dev           # installs what's missing, starts everything, opens http://localhost:8081
+npm run stop          # closes everything it started
 ```
+
+`npm run dev` runs the app (port 8081) and the API server with the care-network vault
+(port 8787) in the background and gives you your terminal back. Running it again just
+reopens the app; it never starts a second copy. Logs are in `.dosely-dev/`.
+
+On a phone, use `npx expo start` instead and scan the QR code with the Expo Go app.
 
 That's it — no configuration needed. Add medications in the **Meds** tab, check off doses on
 **Today**, and see your rating on **Insights**.
@@ -55,7 +61,8 @@ src/
 
 ## Scripts
 
-- `npm start` / `npx expo start` — dev server
+- `npm run dev` / `npm run stop` — start / stop the app, API server and vault (web)
+- `npm start` / `npx expo start` — dev server only
 - `npm run android` / `ios` / `web` — open a platform
 - `npm test` — run the Jest suite (adherence math, schedule, schema, refill prediction, drug clients)
 - `npx tsc --noEmit` — type-check
