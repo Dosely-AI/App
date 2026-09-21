@@ -6,6 +6,8 @@
  */
 export type Profile = {
   name: string;
+  /** Account email (local account). Null for legacy profiles created without one. */
+  email?: string | null;
   /** Require Face ID / Touch ID (or device passcode) to open the app. */
   biometricLock: boolean;
   createdAt: string; // ISO

@@ -148,9 +148,17 @@ export default function SettingsScreen() {
           </Card>
         ) : (
           <Card>
-            <Text style={[styles.title, { color: theme.text }]}>Profile</Text>
+            <Text style={[styles.title, { color: theme.text }]}>Account</Text>
             <Text style={[styles.desc, { color: theme.textSecondary }]}>
-              Your profile lives only on this device. There is no account or password.
+              {profile?.email ? (
+                <>
+                  Signed in as{' '}
+                  <Text style={{ fontWeight: '700', color: theme.text }}>{profile.email}</Text>. Your
+                  account and medications are stored on this device.
+                </>
+              ) : (
+                'Your profile is stored on this device.'
+              )}
             </Text>
             <TextField
               label="Your name"

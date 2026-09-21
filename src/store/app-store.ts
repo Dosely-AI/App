@@ -84,7 +84,7 @@ type AppState = {
   /** Store a passkey session after a successful sign up / sign in. */
   setSession: (session: AuthSession) => void;
   /** Create or replace the local profile (used by sign up and profile edit). */
-  setProfile: (name: string, biometricLock: boolean) => void;
+  setProfile: (name: string, biometricLock: boolean, email?: string | null) => void;
   /** Mark the app unlocked for this session (after a successful auth). */
   unlock: () => void;
   /** Re-lock the app (returns the user to the lock screen). */
@@ -235,10 +235,11 @@ export const useAppStore = create<AppState>()(
 
       setPalette: (palette) => set({ palette }),
 
-      setProfile: (name, biometricLock) =>
+      setProfile: (name, biometricLock, email) =>
         set((s) => ({
           profile: {
             name: name.trim(),
+            email: email !== undefined ? email : s.profile?.email ?? null,
             biometricLock,
             createdAt: s.profile?.createdAt ?? new Date().toISOString(),
           },
