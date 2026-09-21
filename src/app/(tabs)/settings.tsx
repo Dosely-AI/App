@@ -16,6 +16,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { authenticate, biometricLabel, checkBiometrics } from '@/lib/auth/biometrics';
 import { clearApiKey, getApiKey, setApiKey } from '@/lib/ai/key';
+import { passkeysAvailable } from '@/lib/auth/passkey-client';
 import {
   getReminderPermission,
   requestReminderPermission,
@@ -32,6 +33,7 @@ export default function SettingsScreen() {
   const session = useAppStore((s) => s.session);
   const setProfile = useAppStore((s) => s.setProfile);
   const signOut = useAppStore((s) => s.signOut);
+  const clearSession = useAppStore((s) => s.clearSession);
   const palette = useAppStore((s) => s.palette);
   const setPalette = useAppStore((s) => s.setPalette);
   const [hasKey, setHasKey] = useState(false);
@@ -137,59 +139,70 @@ export default function SettingsScreen() {
     <Screen>
       <AuroraBackground />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {session ? (
+        <Card>
+          <Text style={[styles.title, { color: theme.text }]}>Account</Text>
+          <Text style={[styles.desc, { color: theme.textSecondary }]}>
+            {profile?.email ? (
+              <>
+                Signed in as{' '}
+                <Text style={{ fontWeight: '700', color: theme.text }}>{profile.email}</Text>. Your
+                account and medications are stored on this device.
+              </>
+            ) : (
+              'Your profile is stored on this device.'
+            )}
+          </Text>
+          <TextField
+            label="Your name"
+            placeholder="Your name"
+            value={nameInput}
+            onChangeText={setNameInput}
+            autoCapitalize="words"
+          />
+          <View style={{ height: Spacing.three }} />
+          <Button title="Save name" variant="secondary" onPress={saveName} />
+
+          {bioAvailable ? (
+            <View style={styles.lockRow}>
+              <View style={styles.lockText}>
+                <Text style={[styles.lockTitle, { color: theme.text }]}>Lock with {bioLabel}</Text>
+                <Text style={[styles.lockDesc, { color: theme.textSecondary }]}>
+                  Require {bioLabel} each time DoselyAI opens.
+                </Text>
+              </View>
+              <Switch
+                value={profile?.biometricLock ?? false}
+                onValueChange={toggleLock}
+                trackColor={{ true: theme.tint }}
+              />
+            </View>
+          ) : null}
+
+          <View style={{ height: Spacing.three }} />
+          <Button title="Sign out" variant="ghost" onPress={confirmSignOut} />
+        </Card>
+
+        {/* The cloud (passkey) account behind sharing, sync and the care network. */}
+        {session || passkeysAvailable() ? (
           <Card>
-            <Text style={[styles.title, { color: theme.text }]}>Account</Text>
+            <Text style={[styles.title, { color: theme.text }]}>Cloud account</Text>
             <Text style={[styles.desc, { color: theme.textSecondary }]}>
-              Signed in as <Text style={{ fontWeight: '700' }}>{session.name || 'you'}</Text> with a
-              passkey. Your account is verified by the server and works across your devices.
-            </Text>
-            <Button title="Sign out" variant="ghost" onPress={confirmSignOut} />
-          </Card>
-        ) : (
-          <Card>
-            <Text style={[styles.title, { color: theme.text }]}>Account</Text>
-            <Text style={[styles.desc, { color: theme.textSecondary }]}>
-              {profile?.email ? (
+              {session ? (
                 <>
-                  Signed in as{' '}
-                  <Text style={{ fontWeight: '700', color: theme.text }}>{profile.email}</Text>. Your
-                  account and medications are stored on this device.
+                  Connected as <Text style={{ fontWeight: '700', color: theme.text }}>{session.name || 'you'}</Text>{' '}
+                  with a passkey. Caregiver sharing, sync, and your pharmacy and doctors use it.
                 </>
               ) : (
-                'Your profile is stored on this device.'
+                'Not connected. Connect it to share with caregivers, your pharmacy and doctors, and to sync across your devices.'
               )}
             </Text>
-            <TextField
-              label="Your name"
-              placeholder="Your name"
-              value={nameInput}
-              onChangeText={setNameInput}
-              autoCapitalize="words"
-            />
-            <View style={{ height: Spacing.three }} />
-            <Button title="Save name" variant="secondary" onPress={saveName} />
-
-            {bioAvailable ? (
-              <View style={styles.lockRow}>
-                <View style={styles.lockText}>
-                  <Text style={[styles.lockTitle, { color: theme.text }]}>Lock with {bioLabel}</Text>
-                  <Text style={[styles.lockDesc, { color: theme.textSecondary }]}>
-                    Require {bioLabel} each time DoselyAI opens.
-                  </Text>
-                </View>
-                <Switch
-                  value={profile?.biometricLock ?? false}
-                  onValueChange={toggleLock}
-                  trackColor={{ true: theme.tint }}
-                />
-              </View>
-            ) : null}
-
-            <View style={{ height: Spacing.three }} />
-            <Button title="Sign out" variant="ghost" onPress={confirmSignOut} />
+            {session ? (
+              <Button title="Disconnect" variant="ghost" onPress={clearSession} />
+            ) : (
+              <Button title="Connect cloud account" variant="secondary" onPress={() => router.push('/cloud-account')} />
+            )}
           </Card>
-        )}
+        ) : null}
 
         {/* Appearance */}
         <Card>

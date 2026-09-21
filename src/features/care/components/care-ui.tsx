@@ -99,20 +99,6 @@ export function Muted({ children }: { children: ReactNode }) {
   return <Text style={[styles.muted, { color: theme.textSecondary }]}>{children}</Text>;
 }
 
-/** Shown when a care feature needs the passkey account. */
-export function SignInRequired({ what }: { what: string }) {
-  const theme = useTheme();
-  return (
-    <View style={styles.center}>
-      <Ionicons name="shield-checkmark-outline" size={44} color={theme.textSecondary} />
-      <Text style={[styles.muted, { color: theme.textSecondary, textAlign: 'center' }]}>
-        {what} needs an account. Sign in with a passkey from Settings — it keeps your shared health data tied to you
-        alone.
-      </Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   section: { fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: Spacing.two },
@@ -126,5 +112,4 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 14, fontWeight: '600' },
   notice: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
   muted: { fontSize: 14, lineHeight: 20 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.three, padding: Spacing.four },
 });

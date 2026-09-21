@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
+import { CloudAccountRequired } from '@/features/auth/cloud-account-required';
 import { useTheme } from '@/hooks/use-theme';
 import {
   acceptInvite,
@@ -58,13 +59,7 @@ export default function SharingScreen() {
     return (
       <Screen>
         <Stack.Screen options={{ title: 'Caregivers' }} />
-        <View style={styles.center}>
-          <Ionicons name="people-outline" size={44} color={theme.textSecondary} />
-          <Text style={[styles.body, { color: theme.textSecondary, textAlign: 'center' }]}>
-            Caregiver sharing needs an account. Sign in with a passkey to invite a caregiver or care
-            for someone.
-          </Text>
-        </View>
+        <CloudAccountRequired what="Caregiver sharing" />
       </Screen>
     );
   }

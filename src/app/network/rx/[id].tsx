@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Spacing } from '@/constants/theme';
 import { dateKey } from '@/features/adherence/dates';
+import { CloudAccountRequired } from '@/features/auth/cloud-account-required';
 import {
   formatUnits,
   linkedMed,
@@ -17,7 +18,7 @@ import {
   rxStatusLabel,
   supplyAfterPickup,
 } from '@/features/care/care';
-import { Badge, Muted, Notice, SectionLabel, SignInRequired } from '@/features/care/components/care-ui';
+import { Badge, Muted, Notice, SectionLabel } from '@/features/care/components/care-ui';
 import { useCareSession } from '@/features/care/use-care';
 import { errorMessage, useLoad } from '@/features/care/use-load';
 import { useTheme } from '@/hooks/use-theme';
@@ -47,7 +48,7 @@ export default function PrescriptionScreen() {
   if (!session) {
     return (
       <Screen edges={['bottom']}>
-        <SignInRequired what="Prescriptions" />
+        <CloudAccountRequired what="Prescriptions" />
       </Screen>
     );
   }

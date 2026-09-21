@@ -83,6 +83,8 @@ type AppState = {
 
   /** Store a passkey session after a successful sign up / sign in. */
   setSession: (session: AuthSession) => void;
+  /** Disconnect the cloud (passkey) account; the local account stays signed in. */
+  clearSession: () => void;
   /** Create or replace the local profile (used by sign up and profile edit). */
   setProfile: (name: string, biometricLock: boolean, email?: string | null) => void;
   /** Mark the app unlocked for this session (after a successful auth). */
@@ -232,6 +234,7 @@ export const useAppStore = create<AppState>()(
       },
 
       setSession: (session) => set({ session }),
+      clearSession: () => set({ session: null }),
 
       setPalette: (palette) => set({ palette }),
 

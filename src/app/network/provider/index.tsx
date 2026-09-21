@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
+import { CloudAccountRequired } from '@/features/auth/cloud-account-required';
 import { formatDay, isValidNpi, riskLabel, rxStatusLabel, workLabel } from '@/features/care/care';
-import { Badge, Chip, ListRow, Muted, Notice, SectionLabel, SignInRequired } from '@/features/care/components/care-ui';
+import { Badge, Chip, ListRow, Muted, Notice, SectionLabel } from '@/features/care/components/care-ui';
 import { useCareSession } from '@/features/care/use-care';
 import { errorMessage, useLoad } from '@/features/care/use-load';
 import { useTheme } from '@/hooks/use-theme';
@@ -54,7 +55,7 @@ export default function ProviderPortalScreen() {
   if (!session) {
     return (
       <Screen edges={['bottom']}>
-        <SignInRequired what="The provider portal" />
+        <CloudAccountRequired what="The provider portal" />
       </Screen>
     );
   }

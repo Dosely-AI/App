@@ -20,7 +20,7 @@ type Mode = 'signup' | 'signin';
  * sign-in authenticates an existing passkey — usernameless, so the platform
  * offers whichever passkey it has for this site.
  */
-export function PasskeyAuth() {
+export function PasskeyAuth({ intro, onDone }: { intro?: string; onDone?: () => void } = {}) {
   const theme = useTheme();
   const setSession = useAppStore((s) => s.setSession);
 
@@ -32,6 +32,7 @@ export function PasskeyAuth() {
   const apply = (result: AuthResult) => {
     if (result.status === 'ok') {
       setSession(result.session);
+      onDone?.();
       return;
     }
     if (result.status === 'cancelled') {
@@ -75,7 +76,7 @@ export function PasskeyAuth() {
           </Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             {mode === 'signup'
-              ? 'Sign up with a passkey — your fingerprint or face unlocks it, and it works across your devices. No password to remember.'
+              ? (intro ?? 'Sign up with a passkey — your fingerprint or face unlocks it, and it works across your devices. No password to remember.')
               : 'Sign in with the passkey on this device.'}
           </Text>
         </Animated.View>

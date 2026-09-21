@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
-import { Chip, Muted, Notice, SectionLabel, SignInRequired } from '@/features/care/components/care-ui';
+import { CloudAccountRequired } from '@/features/auth/cloud-account-required';
+import { Chip, Muted, Notice, SectionLabel } from '@/features/care/components/care-ui';
 import { useCareSession } from '@/features/care/use-care';
 import { errorMessage, useLoad } from '@/features/care/use-load';
 import { DrugNameField } from '@/features/medications/components/drug-name-field';
@@ -55,7 +56,7 @@ export default function PrescribeScreen() {
   if (!session) {
     return (
       <Screen edges={['bottom']}>
-        <SignInRequired what="Prescribing" />
+        <CloudAccountRequired what="Prescribing" />
       </Screen>
     );
   }

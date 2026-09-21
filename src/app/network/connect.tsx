@@ -7,13 +7,14 @@ import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Spacing } from '@/constants/theme';
+import { CloudAccountRequired } from '@/features/auth/cloud-account-required';
 import {
   DEFAULT_SCOPES,
   buildSnapshot,
   refillLevelLabel,
   scopesFor,
 } from '@/features/care/care';
-import { Chip, Muted, Notice, SectionLabel, SignInRequired } from '@/features/care/components/care-ui';
+import { Chip, Muted, Notice, SectionLabel } from '@/features/care/components/care-ui';
 import { QrCode } from '@/features/care/components/qr-code';
 import { useCareSession } from '@/features/care/use-care';
 import { errorMessage } from '@/features/care/use-load';
@@ -60,7 +61,7 @@ export default function ConnectScreen() {
   if (!session) {
     return (
       <Screen edges={['bottom']}>
-        <SignInRequired what="Connecting a provider" />
+        <CloudAccountRequired what="Connecting a provider" />
       </Screen>
     );
   }

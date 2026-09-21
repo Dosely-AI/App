@@ -5,6 +5,7 @@ import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Spacing } from '@/constants/theme';
+import { CloudAccountRequired } from '@/features/auth/cloud-account-required';
 import {
   formatDay,
   formatUnits,
@@ -14,7 +15,7 @@ import {
   rxStatusLabel,
   scopeLabels,
 } from '@/features/care/care';
-import { Badge, ListRow, Muted, Notice, SectionLabel, SignInRequired } from '@/features/care/components/care-ui';
+import { Badge, ListRow, Muted, Notice, SectionLabel } from '@/features/care/components/care-ui';
 import { useCareSession } from '@/features/care/use-care';
 import { useLoad } from '@/features/care/use-load';
 import { useTheme } from '@/hooks/use-theme';
@@ -41,7 +42,7 @@ export default function ProviderPatientScreen() {
   if (!session) {
     return (
       <Screen edges={['bottom']}>
-        <SignInRequired what="Patient records" />
+        <CloudAccountRequired what="Patient records" />
       </Screen>
     );
   }

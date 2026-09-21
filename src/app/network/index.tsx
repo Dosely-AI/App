@@ -6,8 +6,9 @@ import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Spacing } from '@/constants/theme';
+import { CloudAccountRequired } from '@/features/auth/cloud-account-required';
 import { rxStatusLabel, scopeLabels } from '@/features/care/care';
-import { Badge, ListRow, Muted, Notice, SectionLabel, SignInRequired } from '@/features/care/components/care-ui';
+import { Badge, ListRow, Muted, Notice, SectionLabel } from '@/features/care/components/care-ui';
 import { useCareSession } from '@/features/care/use-care';
 import { errorMessage, useLoad } from '@/features/care/use-load';
 import { useTheme } from '@/hooks/use-theme';
@@ -42,7 +43,7 @@ export default function CareNetworkScreen() {
   if (!session) {
     return (
       <Screen edges={['bottom']}>
-        <SignInRequired what="The care network" />
+        <CloudAccountRequired what="The care network" />
       </Screen>
     );
   }

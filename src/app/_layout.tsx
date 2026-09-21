@@ -47,6 +47,7 @@ export default function RootLayout() {
               <Stack.Screen name="sharing" options={{ title: 'Caregivers & sharing' }} />
               <Stack.Screen name="care/[id]" options={{ title: 'Patient' }} />
               <Stack.Screen name="timing" options={{ title: 'Dose timing' }} />
+              <Stack.Screen name="cloud-account" options={{ title: 'Cloud account' }} />
               <Stack.Screen name="network/index" options={{ title: 'Care network' }} />
               <Stack.Screen name="network/connect" options={{ title: 'Connect a provider' }} />
               <Stack.Screen name="network/activity" options={{ title: 'Who viewed my record' }} />

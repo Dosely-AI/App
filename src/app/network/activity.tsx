@@ -3,7 +3,8 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
 import { Spacing } from '@/constants/theme';
-import { Badge, Muted, Notice, SignInRequired } from '@/features/care/components/care-ui';
+import { CloudAccountRequired } from '@/features/auth/cloud-account-required';
+import { Badge, Muted, Notice } from '@/features/care/components/care-ui';
 import { useCareSession } from '@/features/care/use-care';
 import { useLoad } from '@/features/care/use-load';
 import { useTheme } from '@/hooks/use-theme';
@@ -43,7 +44,7 @@ export default function ActivityScreen() {
   if (!session) {
     return (
       <Screen edges={['bottom']}>
-        <SignInRequired what="Your access history" />
+        <CloudAccountRequired what="Your access history" />
       </Screen>
     );
   }
